@@ -1557,13 +1557,7 @@
         const logo = document.getElementById("site-logo");
 
         // Função para atualizar o logo conforme o tema
-        function updateLogo() {
-            if (body.classList.contains("dark-mode")) {
-                logo.src = "Dark-mode-logo.png";
-            } else {
-                logo.src = "Light-mode-logo.png";
-            }
-        }
+
 
         // Ativar o modo escuro se já estiver salvo no localStorage
         if (localStorage.getItem("dark-mode") === "enabled") {
