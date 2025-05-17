@@ -517,3 +517,7 @@ h1 {
   text-align: left;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
 }
+
+.menu-bg{
+  background-color: #F7F6FE;
+}
