@@ -1,0 +1,10 @@
+<div class="col-md-2 sidebar p-3">
+  <h5 class="text-dark mb-4">ADMIN</h5>
+  <nav class="nav flex-column">
+    <%= link_to 'Users', admin_users_path, class: "nav-link" %>
+    <%= link_to 'Subscriptions', admin_subscription_plans_path, class: "nav-link" %>
+    <a class="nav-link" href="#"><i class="bi bi-list-check"></i> Permissions</a>
+    <a class="nav-link" href="#"><i class="bi bi-gear"></i> Settings</a>
+    <%= button_to "logout", destroy_user_session_path, method: :delete, class: 'btn btn-danger'  %>
+  </nav>
+</div>

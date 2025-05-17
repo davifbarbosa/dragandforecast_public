@@ -1,0 +1,50 @@
+<div class="col-md-10 main-content">
+  <p style="color: green"><%= notice %></p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Subscription Plans</h3>
+    <%= link_to "New subscription plan", new_admin_subscription_plan_path, class: 'btn btn-primary' %>
+    <div class="dropdown">
+      <button class="btn btn-light rounded-circle">
+        <i class="bi bi-person-circle fs-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Users List -->
+    <div class="col-md-6">
+      <div class="table-responsive">
+        <table class="table table-borderd">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Row limit</th>
+            <th>Price</th>
+            <th>Is_default?</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <% @subscription_plans.each do |subscription_plan| %>
+            <tr>
+              <td><%= subscription_plan.name %></td>
+              <td><%= subscription_plan.row_limit %></td>
+              <td><%= subscription_plan.price %></td>
+              <td><%= subscription_plan.default? %></td>
+              <td>
+                <%= link_to 'Edit', edit_admin_subscription_plan_path(subscription_plan), class: 'btn btn-sm btn-primary d-inline' %>
+                <%= button_to "Delete", admin_subscription_plan_path(subscription_plan),
+                              method: :delete,
+                              form: { class: "d-inline" },
+                              data: { confirm: "Are you sure you want to delete this subscription plan?" },
+                              class: 'btn btn-sm btn-danger' %>
+
+              </td>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @csv_file %>
+
+<div>
+  <%= link_to "Edit this csv file", edit_csv_file_path(@csv_file) %> |
+  <%= link_to "Back to csv files", csv_files_path %>
+
+  <%= button_to "Destroy this csv file", @csv_file, method: :delete %>
+</div>

@@ -1,0 +1,19 @@
+<div class="col-md-10 main-content">
+  <p style="color: green"><%= notice %></p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Subscription Plans</h3>
+    <%= link_to "Back to subscription plans", admin_subscription_plans_path, class: 'btn btn-primary' %>
+    <div class="dropdown">
+      <button class="btn btn-light rounded-circle">
+        <i class="bi bi-person-circle fs-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Users List -->
+    <div class="col-md-6">
+      <%= render "form", subscription_plan: @subscription_plan %>
+    </div>
+  </div>
+</div>

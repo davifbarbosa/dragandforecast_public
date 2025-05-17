@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Csv files</h1>
+
+<div id="csv_files">
+  <% @csv_files.each do |csv_file| %>
+    <%= render csv_file %>
+    <p>
+      <%= link_to "Show this csv file", csv_file %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New csv file", new_csv_file_path %>

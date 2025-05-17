@@ -1,0 +1,22 @@
+default: &default
+  adapter: postgresql
+  pool: 5
+  timeout: 5000
+  encoding: unicode
+
+development:
+  <<: *default
+  database: demand_planning_development
+
+  username: ubuntu
+  password: ubuntu
+  host: localhost
+  port: 5432
+
+production:
+  <<: *default
+  database: demand_planning_pro
+  username: ubuntu
+  password: ubuntu
+  host: localhost
+  port: 5432

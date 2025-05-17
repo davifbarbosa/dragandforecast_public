@@ -1,0 +1,32 @@
+<%= form_with(model: csv_file) do |form| %>
+  <% if csv_file.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(csv_file.errors.count, "error") %> prohibited this csv_file from being saved:</h2>
+
+      <ul>
+        <% csv_file.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :user_id, style: "display: block" %>
+    <%= form.text_field :user_id %>
+  </div>
+
+  <div>
+    <%= form.label :filename, style: "display: block" %>
+    <%= form.text_field :filename %>
+  </div>
+
+  <div>
+    <%= form.label :row_count, style: "display: block" %>
+    <%= form.number_field :row_count %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
