@@ -1,4 +1,4 @@
-class Admin::UsersController < ApplicationController
+class Admin::UsersController < BaseController
   before_action :authorize_admin
 
   def index

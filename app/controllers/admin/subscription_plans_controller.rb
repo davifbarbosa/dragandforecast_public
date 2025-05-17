@@ -1,5 +1,5 @@
 module Admin
-  class SubscriptionPlansController < ApplicationController
+  class SubscriptionPlansController < BaseController
     before_action :authenticate_user!
     before_action :require_admin
     before_action :set_subscription_plan, only: [:show, :edit, :update, :destroy]

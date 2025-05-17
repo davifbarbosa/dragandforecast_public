@@ -1,4 +1,4 @@
-class CsvFilesController < ApplicationController
+class CsvFilesController < BaseController
   before_action :set_csv_file, only: %i[ show edit update destroy ]
 
   # GET /csv_files or /csv_files.json

@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  root 'csv_files#new'
+  root 'home#index'
   namespace :admin do
     resources :users
     resources :subscription_plans
