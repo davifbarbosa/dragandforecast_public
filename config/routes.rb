@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root 'home#index'
+  get 'forecast', to: 'forecast#index', as: 'forecast'
   namespace :admin do
     resources :users
     resources :subscription_plans

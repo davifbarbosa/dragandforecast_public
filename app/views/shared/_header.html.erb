@@ -1,11 +1,10 @@
 <header id="header" class="header d-flex align-items-center fixed-top">
   <div class="container position-relative d-flex align-items-center justify-content-between">
 
-    <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+    <%= link_to root_path, class: 'logo d-flex align-items-center me-auto me-xl-0' do %>
       <!-- Uncomment the line below if you also wish to use an image logo -->
-      <!-- <img src="assets/img/logo.webp" alt=""> -->
-      <h1 class="sitename">Invent</h1><span>.</span>
-    </a>
+      <%= image_tag 'Light-mode-logo.png', id: 'site-logo', alt: "Site Logo" %>
+    <% end %>
 
     <nav id="navmenu" class="navmenu">
       <ul>
@@ -17,11 +16,16 @@
         <li><a href="#pricing">Pricing</a></li>
         <li><a href="#team">Team</a></li>
         <li><a href="#contact">Contact</a></li>
+        <li>
+          <%=link_to 'Forecast', forecast_path, class: '' %>
+        </li>
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
-
-    <a class="btn-getstarted" href="#about">Get Started</a>
-
+    <% if user_signed_in? %>
+      <%= button_to "Logout", destroy_user_session_path, method: :delete, class: 'btn btn-danger'  %>
+    <% else %>
+      <%= link_to 'Login', new_user_session_path, class: 'btn-getstarted' %>
+    <% end %>
   </div>
 </header>
