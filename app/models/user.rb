@@ -4,6 +4,9 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
   belongs_to :subscription_plan, optional: true
+  has_many :forecast_rows, dependent: :destroy
+  has_many :forecast_row_backups, dependent: :destroy
+  has_many :actuals, dependent: :destroy
   has_many :csv_files
 
   enum role: { user: 0, admin: 1 }

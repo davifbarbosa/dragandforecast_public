@@ -49,7 +49,6 @@
 
 <section id="hero" class="hero section forcast">
   <div class="container-fluid">
-    <h1>Import Products from CSV</h1>
     <!-- Elementos fixos -->
     <div class="fixed-elements">
       <div class="buttons">
@@ -58,8 +57,7 @@
           <label><input type="radio" name="number-format" value="eu"> Decimals Format (,)</label>
         </div>
         <br>
-        <div style="align-items: center;">
-
+        <div style="display: inline-flex; align-items: center; gap: 10px;">
           <%= form_with url: forecast_rows_path, local: true, html: { multipart: true, id: 'import-form', style: 'display: inline-block;' } do |form| %>
             <label for="upload-template" class="custom-button">Upload Template</label>
             <%= form.file_field :file, id: 'upload-template', accept: '.csv', class: 'd-none' %>
@@ -71,10 +69,21 @@
             <%= form.file_field :file, id: 'upload-actuals', accept: '.csv', class: 'd-none' %>
             <%= form.submit "Import actuals CSV", class: 'd-none' %>
           <% end %>
+
           <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
           <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
-          <button class="custom-button" onclick="clearData()">Clear Forecast</button>
-          <button class="custom-button" onclick="clearActuals()">Clear Actuals</button>
+
+          <%= button_to 'Clear Forecast', destroy_all_forecast_rows_path,
+                        local: false,
+                        method: :delete,
+                        data: { turbo: false, turbo_confirm: 'Are you sure you want to delete all forecast?' },
+                        class: 'btn btn-danger' %>
+
+          <%= button_to 'Clear Actuals', destroy_all_actuals_path,
+                        local: false,
+                        method: :delete,
+                        data: { turbo: false, turbo_confirm: 'Are you sure you want to delete all forecast?' },
+                        class: 'btn btn-danger' %>
         </div>
       </div>
 
@@ -118,9 +127,9 @@
         <button onclick="updateChartColors()">Update Colors</button>
       </div>
       <div class="totals-container">
-        <div class="total highlight-gray" id="total-motors-2024">TOTALS 2024:<br> <span>0</span></div>
-        <div class="total highlight-green" id="total-motors-2025">TOTALS 2025:<br> <span>0</span></div>
-        <div class="total highlight-gray" id="total-motors-2026">TOTALS 2026:<br> <span>0</span></div>
+        <% @totals_by_year.each_with_index do |total, index| %>
+          <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br> <span><%=total[1] %></span></div>
+        <% end %>
         <div class="total highlight-gray" id="total-2024">FILTERED 2024:<br> <span>0</span></div>
         <div class="total highlight-green" id="total-2025">FILTERED 2025:<br> <span>0</span></div>
         <div class="total highlight-gray" id="total-2026">FILTERED 2026:<br> <span>0</span></div>
@@ -249,7 +258,7 @@
             datasets: [
                 {
                     label: 'Actual & Forecast',
-                    data: values, // This one is draggable
+                    data: <%=@totals_by_column.to_h.values %>, // This one is draggable
                     borderColor: colors,
                     segment: {
                         borderColor: colors
@@ -263,7 +272,7 @@
                 },
                 {
                     label: 'Original Backup',
-                    data: original_backup, // Cloned, not draggable
+                    data: <%=@totals_backup_by_column.to_h.values %>, // Cloned, not draggable
                     borderColor: 'gray',
                     borderWidth: 2,
                     borderDash: [5, 5],
