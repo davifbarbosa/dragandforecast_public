@@ -1,5 +1,5 @@
 class ForecastRowsController < BaseController
-  after_action :table_difference
+  before_action :check_uploaded_file, only: %i[ create ]
   def index
     forecast_rows = current_user.forecast_rows
     forecast_row_backups = current_user.forecast_row_backups
@@ -130,6 +130,22 @@ class ForecastRowsController < BaseController
   end
 
   private
+  def check_uploaded_file
+    uploaded_file = params[:file]
+
+    if uploaded_file.content_type != 'text/csv'
+      redirect_to forecast_rows_path, alert: 'Please upload a valid CSV file'
+      return
+    end
+
+    row_count = 0
+    CSV.foreach(uploaded_file.path) { row_count += 1 }
+    row_limit = current_user.subscription_plan.row_limit
+    if row_count > row_limit
+      redirect_to forecast_rows_path, alert: 'Please upgrade your plan'
+      return
+    end
+  end
 
   def is_numeric?(value)
     true if Float(value) rescue false

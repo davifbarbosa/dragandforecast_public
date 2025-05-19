@@ -1,5 +1,6 @@
 class SubscriptionPlan < ApplicationRecord
-  has_many :users
+  has_one :user
+  has_many :plan_purchase_requests
   before_save :unset_other_defaults, if: :default?
   private
 

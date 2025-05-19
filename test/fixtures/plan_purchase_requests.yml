@@ -1,0 +1,27 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  subscription_plan: one
+  first_name: MyString
+  last_name: MyString
+  company: MyString
+  function: MyString
+  email: MyString
+  country: MyString
+  state: MyString
+  agreed_to_terms: false
+  status: 1
+
+two:
+  user: two
+  subscription_plan: two
+  first_name: MyString
+  last_name: MyString
+  company: MyString
+  function: MyString
+  email: MyString
+  country: MyString
+  state: MyString
+  agreed_to_terms: false
+  status: 1

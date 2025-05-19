@@ -1,0 +1,15 @@
+<% if current_user.subscription_plan.default? %>
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <div class="flex-shrink-0">
+        <i class="bi bi-info-circle-fill fs-4 flex-shrink-0 me-2"></i> <!-- Bootstrap Icons (requires bi package) -->
+      </div>
+      <div class="flex-grow-1 ms-3">
+        <h5 class="alert-heading mb-1">Upgrade Your Plan</h5>
+        <p class="mb-2">You've reached the limit for your current plan. Upgrade to unlock premium features and higher limits.
+          <%= link_to 'View Plans', root_path(anchor: 'pricing') %>
+        </p>
+      </div>
+    </div>
+  </div>
+<% end %>
