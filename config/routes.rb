@@ -24,9 +24,16 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :subscription_plans, only: [:index, :show] do
+    get 'buy', to: 'plan_purchase_requests#new', as: 'buy'
+  end
+
+  resources :plan_purchase_requests, only: [:create]
+
   namespace :admin do
     resources :users
     resources :subscription_plans
+    resources :plan_purchase_requests, only: [:index, :update]
   end
   resources :csv_files, only: [:new, :create]
   # resources :subscription_plans
