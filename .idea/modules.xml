@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/demand_planning.iml" filepath="$PROJECT_DIR$/.idea/demand_planning.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../tancom/.idea/tancom.iml" filepath="$PROJECT_DIR$/../tancom/.idea/tancom.iml" />
     </modules>
   </component>
 </project>

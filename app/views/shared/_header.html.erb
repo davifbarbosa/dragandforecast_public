@@ -22,6 +22,7 @@
       </ul>
       <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
     </nav>
+    <button class="logout-button" id="toggle-dark-mode">Dark</button>
     <% if user_signed_in? %>
       <%= button_to "Logout", destroy_user_session_path, method: :delete, class: 'btn btn-danger'  %>
     <% else %>

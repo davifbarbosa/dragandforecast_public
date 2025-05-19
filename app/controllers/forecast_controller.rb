@@ -1,76 +1,152 @@
 class ForecastController < BaseController
-  # before_action :set_csv_file, only: %i[ show edit update destroy ]
+  require 'csv'
 
-  # GET /csv_files or /csv_files.json
+  @@data_storage = {
+    table_data: nil,
+    original_table_data: nil,
+    table_periods: nil
+  }
+
+  @@actuals_storage = {
+    actuals_data: nil
+  }
+
   def index
-
   end
 
-  # GET /csv_files/1 or /csv_files/1.json
-  def show
+  def upload_data
+    file = params[:file]
+
+    unless file
+      return render json: { error: "No file uploaded." }, status: :bad_request
+    end
+
+    begin
+      # Read file content with proper encoding handling
+      content = file.read.force_encoding('UTF-8').encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
+
+      # Remove BOM if present (common with Excel-generated files)
+      content = content.sub(/\A\xEF\xBB\xBF/, '')
+
+      # Parse CSV with headers
+      csv = CSV.parse(content, headers: true)
+
+      # Convert to array of hashes
+      data = csv.map(&:to_h)
+
+      render json: {
+        message: "File processed successfully!",
+        data: data,
+        headers: csv.headers
+      }
+
+    rescue CSV::MalformedCSVError => e
+      render json: {
+        error: "Invalid CSV format",
+        details: e.message
+      }, status: :unprocessable_entity
+
+    rescue Encoding::UndefinedConversionError => e
+      render json: {
+        error: "Encoding error",
+        details: "Please ensure the file is UTF-8 encoded",
+        suggestion: "Try saving the file in Excel as 'CSV UTF-8 (Comma delimited)'"
+      }, status: :unprocessable_entity
+
+    rescue => e
+      render json: {
+        error: "File processing failed",
+        details: e.message
+      }, status: :internal_server_error
+    end
   end
 
-  # GET /csv_files/new
-  def new
-    @csv_file = CsvFile.new
-  end
-
-  # GET /csv_files/1/edit
-  def edit
-  end
-
-  # POST /csv_files or /csv_files.json
-  def create
-    uploaded_file = params[:csv_file][:file]
-    rows = CSV.read(uploaded_file.path).size
-    row_limit = current_user.subscription_plan.row_limit
-
-    if row_limit && rows > row_limit
-      redirect_to new_csv_file_path, alert: "You exceeded your plan limit. Please upgrade."
+  def upload_actuals
+    file = params[:file]
+    if file
+      csv = CSV.parse(file.read, headers: true)
+      data = csv.map(&:to_h)
+      @@actuals_storage[:actuals_data] = data
+      render json: { message: "Actuals data processed!", data: data }
     else
-      @csv_file = current_user.csv_files.build(
-        filename: uploaded_file.original_filename,
-        row_count: rows
-      )
-      if @csv_file.save
-        redirect_to root_path, notice: 'File uploaded successfully.'
-      else
-        render :new
+      render json: { error: "No actuals file uploaded." }, status: :bad_request
+    end
+  end
+  def create_backup
+    begin
+      data = params[:data]
+      periods = params[:periods]
+
+      unless data && periods
+        return render json: { error: "Dados ou períodos ausentes" }, status: :bad_request
       end
-    end
-  end
 
-  # PATCH/PUT /csv_files/1 or /csv_files/1.json
-  def update
-    respond_to do |format|
-      if @csv_file.update(csv_file_params)
-        format.html { redirect_to @csv_file, notice: "Csv file was successfully updated." }
-        format.json { render :show, status: :ok, location: @csv_file }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @csv_file.errors, status: :unprocessable_entity }
+      backup_table = data.deep_dup
+      difference_table = data.map do |row|
+        diff = {
+          "Product" => row["Product"],
+          "Sub-Category" => row["Sub-Category"],
+          "Category" => row["Category"]
+        }
+
+        periods.each do |p|
+          original = row[p].to_f
+          modified = row[p].to_f # simulate backup difference logic
+          diff[p] = (modified - original).round(2)
+        end
+
+        diff
       end
+
+      render json: {
+        backupTable: backup_table,
+        differenceTable: difference_table
+      }
+    rescue => e
+      render json: { error: "Erro interno", details: e.message }, status: :internal_server_error
     end
   end
 
-  # DELETE /csv_files/1 or /csv_files/1.json
-  def destroy
-    @csv_file.destroy!
 
-    respond_to do |format|
-      format.html { redirect_to csv_files_path, status: :see_other, notice: "Csv file was successfully destroyed." }
-      format.json { head :no_content }
+  def load_actuals
+    if @@actuals_storage[:actuals_data].present?
+      render json: { actuals_data: @@actuals_storage[:actuals_data] }
+    else
+      render json: { error: "No actuals data found." }, status: :not_found
     end
   end
 
-  private
-  # Use callbacks to share common setup or constraints between actions.
-  def set_csv_file
-    @csv_file = CsvFile.find(params[:id])
+  def save_data
+    payload = JSON.parse(request.body.read)
+    @@data_storage[:table_data] = payload["tableData"]
+    @@data_storage[:original_table_data] = payload["originalTableData"]
+    @@data_storage[:table_periods] = payload["tablePeriods"]
+    render json: { message: "Data saved successfully!" }
   end
 
-  # Only allow a list of trusted parameters through.
-  def csv_file_params
-    params.require(:csv_file).permit(:user_id, :filename, :row_count)
+  def load_data
+    if @@data_storage.values.any?(&:nil?)
+      render json: { error: "No data found." }, status: :not_found
+    else
+      render json: {
+        tableData: @@data_storage[:table_data],
+        originalTableData: @@data_storage[:original_table_data],
+        tablePeriods: @@data_storage[:table_periods]
+      }
+    end
+  end
+
+  def clear_data
+    @@data_storage = {
+      table_data: nil,
+      original_table_data: nil,
+      table_periods: nil
+    }
+    render json: { message: "Data cleared successfully." }
+  end
+
+  def clear_actuals
+    @@actuals_storage = { actuals_data: nil }
+    render json: { message: "Actuals data cleared successfully." }
   end
 end

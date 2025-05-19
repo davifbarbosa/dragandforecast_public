@@ -1,0 +1,2 @@
+class ForecastRowBackup < ApplicationRecord
+end

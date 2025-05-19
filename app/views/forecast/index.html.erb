@@ -203,10 +203,10 @@
             method: 'POST',
             body: formData,
         })
-            .then(response => response.text())
-            .then(data => {
-            })
-            .catch(error => console.error('Error uploading file:', error));
+          .then(response => response.text())
+          .then(data => {
+          })
+          .catch(error => console.error('Error uploading file:', error));
     }
 
     async function uploadFile(event) {
@@ -454,8 +454,8 @@
         const level = document.querySelector('input[name="level"]:checked').value;
         const filteredRows = filterValue === 'total' ? tableRows : tableRows.filter(row => {
             const levelValue = level === 'product' ? row.cells[0]?.textContent.trim()
-                : level === 'subcategory' ? row.cells[1]?.textContent.trim()
-                    : row.cells[2]?.textContent.trim();
+              : level === 'subcategory' ? row.cells[1]?.textContent.trim()
+                : row.cells[2]?.textContent.trim();
             return levelValue === filterValue;
         });
 
@@ -532,8 +532,8 @@
                 // 🛠️ Pegamos a linha equivalente da tabela atual
                 const currentRow = tableRows[rowIndex];
                 const modifiedValue = currentRow
-                    ? parseFloat(currentRow.cells[periodIndex + 3]?.textContent.replace(/,/g, '') || 0)
-                    : 0;
+                  ? parseFloat(currentRow.cells[periodIndex + 3]?.textContent.replace(/,/g, '') || 0)
+                  : 0;
 
                 const difference = modifiedValue - originalValue;
 
@@ -616,10 +616,10 @@
 
         // Determina as opções com base no nível selecionado
         const options = level === 'product'
-            ? [...new Set(tableData.map(row => row['Product']))]
-            : level === 'subcategory'
-                ? [...new Set(tableData.map(row => row['Sub-Category']))]
-                : [...new Set(tableData.map(row => row['Category']))];
+          ? [...new Set(tableData.map(row => row['Product']))]
+          : level === 'subcategory'
+            ? [...new Set(tableData.map(row => row['Sub-Category']))]
+            : [...new Set(tableData.map(row => row['Category']))];
 
         // Adiciona as opções ao filtro
         options.forEach(option => {
@@ -928,8 +928,8 @@
         // Filtra as linhas com base no filtro selecionado
         const filteredRows = filterValue.toLowerCase() === 'total' ? tableRows : tableRows.filter(row => {
             const levelValue = level === 'product' ? row.cells[0].textContent.trim()
-                : level === 'subcategory' ? row.cells[1].textContent.trim()
-                    : row.cells[2].textContent.trim();
+              : level === 'subcategory' ? row.cells[1].textContent.trim()
+                : row.cells[2].textContent.trim();
             return levelValue === filterValue;
         });
 
@@ -947,16 +947,16 @@
 
         const backupChartData = months.map((_, i) => {
             return originalData
-                .filter(row => {
-                    const levelValue = level === 'product' ? row['Product'].trim()
-                        : level === 'subcategory' ? row['Sub-Category'].trim()
-                            : row['Category'].trim();
-                    return filterValue.toLowerCase() === 'total' || levelValue === filterValue;
-                })
-                .reduce((sum, row) => {
-                    const value = parseFloat(row[months[i]]) || 0;
-                    return sum + value;
-                }, 0);
+              .filter(row => {
+                  const levelValue = level === 'product' ? row['Product'].trim()
+                    : level === 'subcategory' ? row['Sub-Category'].trim()
+                      : row['Category'].trim();
+                  return filterValue.toLowerCase() === 'total' || levelValue === filterValue;
+              })
+              .reduce((sum, row) => {
+                  const value = parseFloat(row[months[i]]) || 0;
+                  return sum + value;
+              }, 0);
         });
 
         console.log('Filter Value:', filterValue);
@@ -984,8 +984,8 @@
             const rows = Array.from(tableBody.querySelectorAll('tr'));
             rows.forEach(row => {
                 const levelValue = level === 'product' ? row.cells[0].textContent.trim()
-                    : level === 'subcategory' ? row.cells[1].textContent.trim()
-                        : row.cells[2].textContent.trim();
+                  : level === 'subcategory' ? row.cells[1].textContent.trim()
+                    : row.cells[2].textContent.trim();
                 row.style.display = (filterValue === 'total' || levelValue === filterValue) ? '' : 'none';
             });
         });
@@ -1737,7 +1737,7 @@
     function getSelectedPeriods3M() {
         console.log("🔍 Buscando períodos selecionados para 3M...");
         const selected = Array.from(document.querySelectorAll("#dropdown-content-3m input:checked"))
-            .map(input => input.value);
+          .map(input => input.value);
         console.log("📌 Períodos selecionados para 3M após interação:", selected);
         return selected;
     }
@@ -1745,7 +1745,7 @@
     function getSelectedPeriods6M() {
         console.log("🔍 Buscando períodos selecionados para 6M...");
         const selected = Array.from(document.querySelectorAll("#dropdown-content-6m input:checked"))
-            .map(input => input.value);
+          .map(input => input.value);
         console.log("📌 Períodos selecionados para 6M após interação:", selected);
         return selected;
     }
@@ -1770,8 +1770,8 @@
         } else {
             filteredRows = tableRows.filter(row => {
                 const levelValue = level === 'product' ? row.cells[0]?.textContent.trim()
-                    : level === 'subcategory' ? row.cells[1]?.textContent.trim()
-                        : row.cells[2]?.textContent.trim();
+                  : level === 'subcategory' ? row.cells[1]?.textContent.trim()
+                    : row.cells[2]?.textContent.trim();
                 return levelValue.toLowerCase() === filterValue;
             });
         }
@@ -1822,7 +1822,7 @@
 
         // Remover linhas de médias existentes antes de adicionar novas
         window.forecastChart.data.datasets = window.forecastChart.data.datasets.filter(dataset =>
-            dataset.label !== "Avg-1" && dataset.label !== "Avg-2"
+          dataset.label !== "Avg-1" && dataset.label !== "Avg-2"
         );
 
 
@@ -1857,34 +1857,34 @@
 
         // Remover as linhas de médias anteriores (se existirem)
         window.forecastChart.data.datasets = window.forecastChart.data.datasets.filter(dataset =>
-            dataset.label !== "3M-Avg" && dataset.label !== "6M-Avg"
+          dataset.label !== "3M-Avg" && dataset.label !== "6M-Avg"
         );
 
         // Adicionar as novas linhas de média ao gráfico
         window.forecastChart.data.datasets.push(
-            {
-                label: "Avg-1",
-                data: avgLine3M,
-                borderColor: "rgba(255, 99, 132, 0.5)", // 🔥 Vermelho pastel
-                borderWidth: 1, // 🔥 Linha mais fina
-                borderDash: [5, 5],
-                fill: false,
-                pointRadius: 0, // 🔥 Remove os pontos (botinhas)
-                tension: 0.1, // 🔥 Deixa a linha mais suave
-                datalabels: { display: false } // 🔥 Remove os rótulos de dados APENAS para essa linha
+          {
+              label: "Avg-1",
+              data: avgLine3M,
+              borderColor: "rgba(255, 99, 132, 0.5)", // 🔥 Vermelho pastel
+              borderWidth: 1, // 🔥 Linha mais fina
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0, // 🔥 Remove os pontos (botinhas)
+              tension: 0.1, // 🔥 Deixa a linha mais suave
+              datalabels: { display: false } // 🔥 Remove os rótulos de dados APENAS para essa linha
 
-            },
-            {
-                label: "Avg-2",
-                data: avgLine6M,
-                borderColor: "rgba(54, 162, 235, 0.5)", // 🔥 Azul pastel
-                borderWidth: 1, // 🔥 Linha mais fina
-                borderDash: [5, 5],
-                fill: false,
-                pointRadius: 0, // 🔥 Remove os pontos (botinhas)
-                tension: 0.1, // 🔥 Deixa a linha mais suave
-                datalabels: { display: false } // 🔥 Remove os rótulos de dados APENAS para essa linha
-            }
+          },
+          {
+              label: "Avg-2",
+              data: avgLine6M,
+              borderColor: "rgba(54, 162, 235, 0.5)", // 🔥 Azul pastel
+              borderWidth: 1, // 🔥 Linha mais fina
+              borderDash: [5, 5],
+              fill: false,
+              pointRadius: 0, // 🔥 Remove os pontos (botinhas)
+              tension: 0.1, // 🔥 Deixa a linha mais suave
+              datalabels: { display: false } // 🔥 Remove os rótulos de dados APENAS para essa linha
+          }
         );
 
         // Atualizar o gráfico sem modificar o layout original

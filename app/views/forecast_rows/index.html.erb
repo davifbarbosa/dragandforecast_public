@@ -1,0 +1,296 @@
+<section id="hero" class="hero section forcast">
+  <div class="container-fluid">
+    <h1>Import Products from CSV</h1>
+
+    <%= form_with url: forecast_rows_path, local: true, html: { multipart: true } do |form| %>
+      <div>
+        <%= form.label :file, "Choose CSV File" %><br>
+        <%= form.file_field :file %>
+      </div>
+
+      <div>
+        <%= form.submit "Import CSV" %>
+      </div>
+    <% end %>
+
+    <!-- Elementos fixos -->
+    <div class="fixed-elements">
+      <div class="buttons">
+        <div class="number-format">
+          <label><input type="radio" name="number-format" value="us" checked> Decimals Format (.)</label>
+          <label><input type="radio" name="number-format" value="eu"> Decimals Format (,)</label>
+        </div>
+        <br>
+        <label for="upload-template" class="custom-button">Upload Template</label>
+        <input type="file" id="upload-template" accept=".csv" onchange="uploadFile(event)" style="display: none;">
+        <label for="upload-actuals" class="custom-button">Upload de Actuals</label>
+        <input type="file" id="upload-actuals" accept=".csv" onchange="uploadActuals(event)" style="display: none;">
+        <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
+        <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
+        <button class="custom-button" onclick="clearData()">Clear Forecast</button>
+        <button class="custom-button" onclick="clearActuals()">Clear Actuals</button>
+      </div>
+
+      <div class="filter-container">
+        <label for="filter-search">Search:</label>
+        <input type="text" id="filter-search" oninput="searchFilterOptions()" placeholder="Search...">
+        <div class="custom-dropdown">
+          <button class="dropdown-btn" id="dropdown-btn-3m">Avg-1 ▼</button>
+          <div class="dropdown-content" id="dropdown-content-3m"></div>
+        </div>
+        <div class="custom-dropdown">
+          <button class="dropdown-btn" id="dropdown-btn-6m">Avg-2 ▼</button>
+          <div class="dropdown-content" id="dropdown-content-6m"></div>
+        </div>
+        <br>
+        <div class="controls">
+          <label><input type="radio" name="level" value="product" checked onchange="updateFilterOptions()"> Product</label>
+          <label><input type="radio" name="level" value="subcategory" onchange="updateFilterOptions()"> Sub-Category</label>
+          <label><input type="radio" name="level" value="category" onchange="updateFilterOptions()"> Category</label>
+        </div>
+        <label for="filter-select">Filter by:</label>
+        <%#= select_tag :product, options_for_select(@product_names), id: "filter-select" %>
+        <%= form_with url: forecast_rows_path, method: :get, local: true do %>
+          <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select"  %>
+          <%= submit_tag "Filter" %>
+        <% end %>
+        <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
+        <button onclick="navigateFilter('next')" class="custom-button">Next</button>
+
+      </div>
+      <div class="color-controls">
+        <label>Green Periods:</label>
+        <input type="number" id="green-periods" value="12" min="0" max="36" step="1">
+
+        <label>Blue Periods:</label>
+        <input type="number" id="blue-periods" value="12" min="0" max="36" step="1">
+
+        <label>Red Periods:</label>
+        <input type="number" id="red-periods" value="12" min="0" max="36" step="1">
+
+        <button onclick="updateChartColors()">Update Colors</button>
+      </div>
+
+    </div>
+
+    <!-- Conteúdo rolável -->
+    <div class="scrollable-content">
+      <div id="chart-container">
+        <canvas id="forecast-chart" height="300"></canvas>
+      </div>
+
+      <div class="data-table-wrapper">
+        <table class="data-table">
+          <thead id="table-headers">
+          <tr>
+            <% @forecast_rows_header.each do |key| %>
+              <th><%= key %></th>
+            <% end %>
+          </tr>
+          </thead>
+          <tbody id="data-table-body">
+          <% @forecast_rows.each do |record| %>
+            <tr>
+              <% @forecast_rows_header.each do |key| %>
+                <td><%= record.data[key] %></td>
+              <% end %>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="data-table-wrapper">
+        <h3>Tabela Original (Backup)</h3>
+        <table class="data-table">
+          <thead id="original-table-headers">
+          <tr>
+            <% @forecast_rows_backup_header.each do |key| %>
+              <th><%= key %></th>
+            <% end %>
+          </tr>
+          </thead>
+          <tbody id="original-table-body">
+          <% @forecast_rows_backup.each do |record| %>
+            <tr>
+              <% @forecast_rows_backup_header.each do |key| %>
+                <td><%= record.data[key] %></td>
+              <% end %>
+            </tr>
+          <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="data-table-wrapper">
+        <h3>Tabela de Diferenças</h3>
+        <table class="data-table">
+          <thead id="difference-table-headers"></thead>
+          <tbody id="difference-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<script>
+    const rawData = <%= raw(@forecast_rows.to_json) %>;
+    const forecast_rows_backup = <%= raw(@forecast_rows_backup.to_json) %>;
+    let isDarkMode = false;
+
+    const labels = Object.keys(rawData[0].data);
+    const values = labels.map(key => parseFloat(rawData[0].data[key]));
+    const labels_backup = Object.keys(forecast_rows_backup[0].data);// Create independent backup data
+    const original_backup = labels_backup.map(key => parseFloat(forecast_rows_backup[0].data[key]));
+    const rowId = rawData[0].id;
+
+    const split1 = 12;
+    const split2 = 24;
+    const colors = values.map((_, i) => {
+        if (i < split1) return 'green';
+        if (i < split2) return 'blue';
+        return 'red';
+    });
+
+    new Chart(document.getElementById('forecast-chart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Actual & Forecast',
+                    data: values, // This one is draggable
+                    borderColor: colors,
+                    segment: {
+                        borderColor: colors
+                    },
+                    borderWidth: 2,
+                    fill: false,
+                    pointBackgroundColor: 'white',
+                    pointBorderColor: colors,
+                    pointRadius: 5,
+                    tension: 0.4
+                },
+                {
+                    label: 'Original Backup',
+                    data: original_backup, // Cloned, not draggable
+                    borderColor: 'gray',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                    datalabels: {
+                        display: false
+                    }
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 50,
+                    bottom: 30
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 15,
+                        font: { size: 12 },
+                        color: isDarkMode ? "#ffffff" : "#000000"
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDarkMode ? "#333" : "#ffffff",
+                    titleColor: isDarkMode ? "#ffffff" : "#000000",
+                    bodyColor: isDarkMode ? "#ffffff" : "#000000",
+                    borderColor: isDarkMode ? "#666" : "#ddd",
+                    borderWidth: 1
+                },
+                datalabels: {
+                    color: isDarkMode ? "#ffffff" : "#000000",
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: value => Math.round(value).toLocaleString(),
+                    font: { size: 9, weight: 'bold' },
+                    rotation: -60
+                },
+                dragData: {
+                    round: 1,
+                    showTooltip: true,
+                    onDragStart: (e, datasetIndex) => {
+                        // Only allow dragging the first dataset
+                        return datasetIndex === 0;
+                    },
+                    onDragEnd: (e, datasetIndex, index, value) => {
+                        if (datasetIndex !== 0) return;
+
+                        const key = labels[index];
+                        rawData[0].data[key] = value;
+
+                        fetch(`/forecast_rows/${rowId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
+                            },
+                            body: JSON.stringify({ data: rawData[0].data })
+                        }).then(response => {
+                            if (!response.ok) {
+                                alert("Failed to save updated value.");
+                            }
+                        });
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Period',
+                        color: isDarkMode ? "#ffffff" : "#000000"
+                    },
+                    ticks: {
+                        maxRotation: 60,
+                        minRotation: 30,
+                        color: isDarkMode ? "#ffffff" : "#000000"
+                    },
+                    grid: {
+                        color: isDarkMode ? "#444" : "#ddd"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Volume',
+                        color: isDarkMode ? "#ffffff" : "#000000"
+                    },
+                    beginAtZero: true,
+                    ticks: {
+                        callback: value => Math.round(value).toLocaleString(),
+                        color: isDarkMode ? "#ffffff" : "#000000"
+                    },
+                    grid: {
+                        color: isDarkMode ? "#444" : "#ddd"
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+</script>
+
+<div class="loading-popup" style="display: none;">
+  <p>Processing data... Please wait.</p>
+</div>
+<div class="hidden-content">
+  <div id="tooltip" class="custom-tooltip" style="display: none;"></div>
+</div>

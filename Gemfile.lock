@@ -59,6 +59,8 @@ GEM
       activemodel (= 7.1.5.1)
       activesupport (= 7.1.5.1)
       timeout (>= 0.4.0)
+    activerecord-import (2.1.0)
+      activerecord (>= 4.2)
     activestorage (7.1.5.1)
       actionpack (= 7.1.5.1)
       activejob (= 7.1.5.1)
@@ -103,6 +105,7 @@ GEM
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
     crass (1.0.6)
+    csv (3.3.4)
     date (3.4.1)
     debug (1.10.0)
       irb (~> 1.10)
@@ -182,7 +185,7 @@ GEM
     pundit (2.5.0)
       activesupport (>= 3.0.0)
     racc (1.8.1)
-    rack (3.1.14)
+    rack (3.1.15)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -229,6 +232,9 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     rexml (3.4.1)
+    roo (2.10.1)
+      nokogiri (~> 1)
+      rubyzip (>= 1.3.0, < 3.0.0)
     rubyzip (2.4.1)
     sassc (2.4.0)
       ffi (~> 1.9)
@@ -284,9 +290,11 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activerecord-import
   bootsnap
   bootstrap (~> 5.3.0)
   capybara
+  csv
   debug
   devise
   importmap-rails
@@ -297,6 +305,7 @@ DEPENDENCIES
   puma (>= 5.0)
   pundit
   rails (~> 7.1.5, >= 7.1.5.1)
+  roo
   sassc-rails
   selenium-webdriver
   sprockets-rails
@@ -306,7 +315,7 @@ DEPENDENCIES
   web-console
 
 RUBY VERSION
-   ruby 3.0.0p0
+   ruby 3.1.0p0
 
 BUNDLED WITH
    2.2.3

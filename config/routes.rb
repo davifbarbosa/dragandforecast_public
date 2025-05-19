@@ -1,6 +1,19 @@
 Rails.application.routes.draw do
   root 'home#index'
-  get 'forecast', to: 'forecast#index', as: 'forecast'
+  # get 'load_actuals', to: 'forecast#load_actuals', as: 'load_actuals'
+  # post 'upload', to: 'forecast#upload', as: 'upload'
+  post 'upload_data', to: 'forecast#upload_data'
+  post 'upload_actuals', to: 'forecast#upload_actuals'
+  post 'save_data', to: 'forecast#save_data'
+  get 'load_data', to: 'forecast#load_data'
+  get 'load_actuals', to: 'forecast#load_actuals'
+  post 'clear_data', to: 'forecast#clear_data'
+  post 'clear_actuals', to: 'forecast#clear_actuals'
+  post 'create-backup', to: 'dashboard#create_backup'
+  get 'forecast', to: 'forecast_rows#index', as: 'forecast'
+  resources :forecast_rows, only: [:index, :create, :update]
+
+
   namespace :admin do
     resources :users
     resources :subscription_plans
