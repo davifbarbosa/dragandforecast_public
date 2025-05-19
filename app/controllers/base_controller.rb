@@ -1,6 +1,6 @@
 class BaseController < ApplicationController
   layout :layout_by_resource
-  include Pundit
+  include Pundit::Authorization
   before_action :authenticate_user!
 
 

@@ -1,4 +1,5 @@
 class ForecastRowsController < BaseController
+  after_action :table_difference
   def index
     forecast_rows = current_user.forecast_rows
     forecast_row_backups = current_user.forecast_row_backups
@@ -13,7 +14,6 @@ class ForecastRowsController < BaseController
     @product_names = ["Total"] + forecast_rows.all.map { |row| row.data["Product"] }.uniq
     @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
     @forecast_rows_header = @forecast_rows_backup_header
-    @actuals = actuals.order(:id)
     @sum_of_averages1 = first_three_months_average(1)
     @sum_of_averages2 = six_months_average(1)
 
@@ -42,6 +42,19 @@ class ForecastRowsController < BaseController
         @totals_backup_by_column[key] += numeric_value
       end
     end
+
+
+    @actual_columns = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+    clean_actuals = clean_actual_columns(actuals)
+    clean_actuals.each do |forecast|
+      forecast[:data].each do |key, value|
+        numeric_value = value.to_f
+        # Sum by column
+        @actual_columns[key] += numeric_value
+      end
+    end
+
+    table_difference
   end
 
   def create
@@ -60,8 +73,16 @@ class ForecastRowsController < BaseController
 
   def update
     row = current_user.forecast_rows.find(params[:id])
-    row.update(data: params[:data])
-    render json: { status: 'updated' }
+    if params[:changed_key].present?
+      changed_key = params[:changed_key]
+      real_value = row[:data][changed_key]&.to_f
+      percent_change = params[:percent_change]
+      changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+      remain_value = real_value + changed_value
+      row[:data][changed_key] = remain_value.to_i
+      row.save!
+      render json: { status: 'updated' }
+    end
   end
 
   def destroy_all
@@ -70,7 +91,49 @@ class ForecastRowsController < BaseController
     redirect_to forecast_rows_path, notice: 'Forecast Database clear.'
   end
 
+  # app/controllers/forecast_rows_controller.rb
+  def table_difference
+    @forecast_rows = ForecastRow.includes(:forecast_row_backup)
+
+    @comparison_data = []
+
+    @all_keys = []
+
+    @forecast_rows.each do |row|
+      backup = row.forecast_row_backup
+      next unless backup
+
+      current_data = row.data
+      backup_data = backup.data
+
+      keys = (current_data.keys + backup_data.keys).uniq.sort
+      @all_keys |= keys
+
+      differences = keys.map do |key|
+        original = backup_data[key]
+        updated = current_data[key]
+
+        if is_numeric?(original) && is_numeric?(updated)
+          (updated.to_f - original.to_f).round(2)
+        else
+          original.to_s == updated.to_s ? 0 : 'changed'
+        end
+      end
+
+      @comparison_data << {
+        row_id: row.id,
+        values: differences
+      }
+    end
+
+    @all_keys.sort!
+  end
+
   private
+
+  def is_numeric?(value)
+    true if Float(value) rescue false
+  end
 
   def clean_forecastrow(forecast_rows)
     forecasts = forecast_rows.map do |forecast|
@@ -103,6 +166,22 @@ class ForecastRowsController < BaseController
 
     end
     return forecast_backups
+  end
+
+  def clean_actual_columns(actuals)
+    actuals = actuals.map do |actual|
+      filtered_data = actual.data.reject { |key, _| ["Product", "Category", "Sub-Category"].include?(key) }
+      # You can return a hash with filtered data and any other attributes you want:
+      {
+        id: actual.id,
+        data: filtered_data,
+        user_id: actual.user_id,
+        created_at: actual.created_at,
+        updated_at: actual.updated_at
+      }
+
+    end
+    return actuals
   end
 
   def first_three_months_average(count)

@@ -190,7 +190,24 @@
         <h3>Tabela de Diferenças</h3>
         <table class="data-table">
           <thead id="difference-table-headers"></thead>
-          <tbody id="difference-table-body"></tbody>
+          <tr>
+            <% @all_keys.each do |key| %>
+              <th><%= key %></th>
+            <% end %>
+          </tr>
+          </thead>
+          <tbody id="difference-table-body">
+          <% @comparison_data.each do |row| %>
+            <tr>
+              <% row[:values].each do |diff| %>
+                <td style="color:
+                  <%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'orange' %>;">
+                  <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+          </tbody>
         </table>
       </div>
     </div>
@@ -224,6 +241,7 @@
     });
     let actuals = [];
     let isDarkMode = false;
+    let originalValue = null;
     const sumOfAverages1 = <%= @sum_of_averages1 %>;
     const sumOfAverages2 = <%= @sum_of_averages2 %>;
     const rawData = <%= raw(@forecast_rows.to_json) %>;
@@ -237,10 +255,9 @@
     }else {
         actuals =  []
     }
-
-    const forecast_rows_backup = <%= raw(@forecast_rows_backup.to_json) %>;
-    const labels_backup = Object.keys(forecast_rows_backup[0].data);// Create independent backup data
-    const original_backup = labels_backup.map(key => parseFloat(forecast_rows_backup[0].data[key]));
+    <!--    const forecast_rows_backup = <%#= raw(@forecast_rows_backup.to_json) %>;-->
+    // const labels_backup = Object.keys(forecast_rows_backup[0].data);// Create independent backup data
+    // const original_backup = labels_backup.map(key => parseFloat(forecast_rows_backup[0].data[key]));
     const rowId = rawData[0].id;
 
     const split1 = 12;
@@ -261,7 +278,7 @@
                     data: <%=@totals_by_column.to_h.values %>, // This one is draggable
                     borderColor: colors,
                     segment: {
-                        borderColor: colors
+                        borderColor: ['green', 'red', 'blue'],
                     },
                     borderWidth: 2,
                     fill: false,
@@ -285,7 +302,7 @@
                 {
                     type: 'bar',
                     label: 'Actuals',
-                    data: actuals,
+                    data: <%=@actual_columns.to_h.values %>,
                     backgroundColor: 'rgba(173, 216, 230, 0.7)', // light blue
                     datalabels: {
                         display: false // 👈 Hides values for this dataset only
@@ -369,23 +386,28 @@
                 dragData: {
                     round: 1,
                     showTooltip: true,
-                    onDragStart: (e, datasetIndex) => {
-                        // Only allow dragging the first dataset
-                        return datasetIndex === 0;
+                    onDragStart:(e, datasetIndex, index, value) =>  {
+                        if (datasetIndex !== 0) return false;
+
+                        originalValue = value; // Save the starting value
+                        return true;
                     },
                     onDragEnd: (e, datasetIndex, index, value) => {
-                        if (datasetIndex !== 0) return;
-
+                        if (datasetIndex !== 0 || originalValue === null) return;
+                        const percentChange = ((value - originalValue) / originalValue) * 100;
                         const key = labels[index];
                         rawData[0].data[key] = value;
-
                         fetch(`/forecast_rows/${rowId}`, {
                             method: 'PATCH',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
                             },
-                            body: JSON.stringify({ data: rawData[0].data })
+                            body: JSON.stringify({
+                                data: rawData[0].data,
+                                changed_key: key,
+                                percent_change: percentChange.toFixed(2)
+                            })
                         }).then(response => {
                             if (!response.ok) {
                                 alert("Failed to save updated value.");
