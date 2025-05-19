@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   post 'create-backup', to: 'dashboard#create_backup'
   get 'forecast', to: 'forecast_rows#index', as: 'forecast'
   resources :forecast_rows, only: [:index, :create, :update]
+  resources :actuals, only: [:index, :create, :update]
 
 
   namespace :admin do

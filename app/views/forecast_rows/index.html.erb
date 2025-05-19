@@ -1,18 +1,55 @@
+<style>
+    .custom-button {
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        text-align: center;
+        display: inline-block;
+    }
+    .totals-container {
+        display: flex;
+        marging-left: -15px;
+        justify-content: space-between;
+        padding: 10px 50px;
+        background-color: #f4f4f4;
+        border-bottom: 1px solid #ddd;
+    }
+    .total {
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .highlight-green {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .highlight-gray {
+        background-color: #f4f4f4;
+        border: 1px solid #c3e6cb;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .loading-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.75);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        display: none;
+        text-align: center;
+    }
+
+</style>
+
 <section id="hero" class="hero section forcast">
   <div class="container-fluid">
     <h1>Import Products from CSV</h1>
-
-    <%= form_with url: forecast_rows_path, local: true, html: { multipart: true } do |form| %>
-      <div>
-        <%= form.label :file, "Choose CSV File" %><br>
-        <%= form.file_field :file %>
-      </div>
-
-      <div>
-        <%= form.submit "Import CSV" %>
-      </div>
-    <% end %>
-
     <!-- Elementos fixos -->
     <div class="fixed-elements">
       <div class="buttons">
@@ -21,14 +58,24 @@
           <label><input type="radio" name="number-format" value="eu"> Decimals Format (,)</label>
         </div>
         <br>
-        <label for="upload-template" class="custom-button">Upload Template</label>
-        <input type="file" id="upload-template" accept=".csv" onchange="uploadFile(event)" style="display: none;">
-        <label for="upload-actuals" class="custom-button">Upload de Actuals</label>
-        <input type="file" id="upload-actuals" accept=".csv" onchange="uploadActuals(event)" style="display: none;">
-        <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
-        <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
-        <button class="custom-button" onclick="clearData()">Clear Forecast</button>
-        <button class="custom-button" onclick="clearActuals()">Clear Actuals</button>
+        <div style="align-items: center;">
+
+          <%= form_with url: forecast_rows_path, local: true, html: { multipart: true, id: 'import-form', style: 'display: inline-block;' } do |form| %>
+            <label for="upload-template" class="custom-button">Upload Template</label>
+            <%= form.file_field :file, id: 'upload-template', accept: '.csv', class: 'd-none' %>
+            <%= form.submit "Import template", class: 'd-none' %>
+          <% end %>
+
+          <%= form_with url: actuals_path, local: true, html: { multipart: true, id: 'actuals-import-form', style: 'display: inline-block;' } do |form| %>
+            <label for="upload-actuals" class="custom-button">Upload de Actuals</label>
+            <%= form.file_field :file, id: 'upload-actuals', accept: '.csv', class: 'd-none' %>
+            <%= form.submit "Import actuals CSV", class: 'd-none' %>
+          <% end %>
+          <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
+          <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
+          <button class="custom-button" onclick="clearData()">Clear Forecast</button>
+          <button class="custom-button" onclick="clearActuals()">Clear Actuals</button>
+        </div>
       </div>
 
       <div class="filter-container">
@@ -69,6 +116,14 @@
         <input type="number" id="red-periods" value="12" min="0" max="36" step="1">
 
         <button onclick="updateChartColors()">Update Colors</button>
+      </div>
+      <div class="totals-container">
+        <div class="total highlight-gray" id="total-motors-2024">TOTALS 2024:<br> <span>0</span></div>
+        <div class="total highlight-green" id="total-motors-2025">TOTALS 2025:<br> <span>0</span></div>
+        <div class="total highlight-gray" id="total-motors-2026">TOTALS 2026:<br> <span>0</span></div>
+        <div class="total highlight-gray" id="total-2024">FILTERED 2024:<br> <span>0</span></div>
+        <div class="total highlight-green" id="total-2025">FILTERED 2025:<br> <span>0</span></div>
+        <div class="total highlight-gray" id="total-2026">FILTERED 2026:<br> <span>0</span></div>
       </div>
 
     </div>
@@ -139,12 +194,42 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
-    const rawData = <%= raw(@forecast_rows.to_json) %>;
-    const forecast_rows_backup = <%= raw(@forecast_rows_backup.to_json) %>;
-    let isDarkMode = false;
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("upload-template");
 
+        fileInput.addEventListener("change", function () {
+            if (fileInput.files.length > 0) {
+                document.getElementById("import-form").submit();
+            }
+        });
+
+        const actualfileInput = document.getElementById("upload-actuals");
+
+        actualfileInput.addEventListener("change", function () {
+            if (actualfileInput.files.length > 0) {
+                document.getElementById("actuals-import-form").submit();
+            }
+        });
+
+
+    });
+    let actuals = [];
+    let isDarkMode = false;
+    const sumOfAverages1 = <%= @sum_of_averages1 %>;
+    const sumOfAverages2 = <%= @sum_of_averages2 %>;
+    const rawData = <%= raw(@forecast_rows.to_json) %>;
     const labels = Object.keys(rawData[0].data);
     const values = labels.map(key => parseFloat(rawData[0].data[key]));
+
+    const actualsrawData = <%= @actuals.present? ? raw(@actuals.to_json) : '[]' %>;
+    if (actualsrawData.length > 0){
+        const actual_labels = Object.keys(actualsrawData[0].data);
+        actuals = actual_labels.map(key => parseFloat(actualsrawData[0].data[key]));
+    }else {
+        actuals =  []
+    }
+
+    const forecast_rows_backup = <%= raw(@forecast_rows_backup.to_json) %>;
     const labels_backup = Object.keys(forecast_rows_backup[0].data);// Create independent backup data
     const original_backup = labels_backup.map(key => parseFloat(forecast_rows_backup[0].data[key]));
     const rowId = rawData[0].id;
@@ -187,12 +272,61 @@
                     datalabels: {
                         display: false
                     }
-                }
+                },
+                {
+                    type: 'bar',
+                    label: 'Actuals',
+                    data: actuals,
+                    backgroundColor: 'rgba(173, 216, 230, 0.7)', // light blue
+                    datalabels: {
+                        display: false // 👈 Hides values for this dataset only
+                    }
+                },
+                {
+                    label: 'Avg-1',
+                    data: Array(labels.length).fill(sumOfAverages1),
+                    borderColor: 'blue',
+                    borderWidth: 2,
+                    borderDash: [3, 3],
+                    pointRadius: 0,
+                    fill: false,
+                    datalabels: {
+                        display: true,
+                        formatter: function() {
+                            return sumOfAverages1.toFixed(2);
+                        },
+                        align: 'right',
+                        anchor: 'right'
+                    },
+                    datalabels: {
+                        display: false
+                    }
+                },
+                {
+                    label: 'Avg-2',
+                    data: Array(labels.length).fill(sumOfAverages2),
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    borderDash: [3, 3],
+                    pointRadius: 0,
+                    fill: false,
+                    datalabels: {
+                        display: true,
+                        formatter: function() {
+                            return sumOfAverages2.toFixed(2);
+                        },
+                        align: 'right',
+                        anchor: 'right'
+                    },
+                    datalabels: {
+                        display: false
+                    }
+                },
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
             layout: {
                 padding: {
                     top: 50,
@@ -254,7 +388,7 @@
             scales: {
                 x: {
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Period',
                         color: isDarkMode ? "#ffffff" : "#000000"
                     },
@@ -264,12 +398,13 @@
                         color: isDarkMode ? "#ffffff" : "#000000"
                     },
                     grid: {
+                        display: false,
                         color: isDarkMode ? "#444" : "#ddd"
                     }
                 },
                 y: {
                     title: {
-                        display: true,
+                        display: false,
                         text: 'Volume',
                         color: isDarkMode ? "#ffffff" : "#000000"
                     },
@@ -279,6 +414,7 @@
                         color: isDarkMode ? "#ffffff" : "#000000"
                     },
                     grid: {
+                        display: false,
                         color: isDarkMode ? "#444" : "#ddd"
                     }
                 }
