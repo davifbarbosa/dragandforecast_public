@@ -20,8 +20,10 @@ class ForecastRowsController < BaseController
     @categories = ["Total"] + forecast_rows.all.map { |row| row.data["Category"] }.uniq
 
     #Common Avg
-    avg_keys = forecast_rows.first.data.keys
-    @avg1 = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
+    if forecast_rows.present?
+      avg_keys = forecast_rows.first.data.keys
+      @avg = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
+    end
 
     @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
     @forecast_rows_header = @forecast_rows_backup_header
