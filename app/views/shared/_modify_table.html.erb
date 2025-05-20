@@ -1,0 +1,20 @@
+<div class="data-table-wrapper">
+  <table class="data-table">
+    <thead id="table-headers">
+    <tr>
+      <% @forecast_rows_header.each do |key| %>
+        <th><%= key %></th>
+      <% end %>
+    </tr>
+    </thead>
+    <tbody id="data-table-body">
+    <% @forecast_rows.each do |record| %>
+      <tr>
+        <% @forecast_rows_header.each do |key| %>
+          <td><%= record.data[key] %></td>
+        <% end %>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>

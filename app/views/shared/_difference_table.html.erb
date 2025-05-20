@@ -1,0 +1,24 @@
+<div class="data-table-wrapper">
+  <h3>Tabela de Diferenças</h3>
+  <table class="data-table">
+    <thead id="difference-table-headers"></thead>
+    <tr>
+      <% @all_keys.each do |key| %>
+        <th><%= key %></th>
+      <% end %>
+    </tr>
+    </thead>
+    <tbody id="difference-table-body">
+    <% @comparison_data.each do |row| %>
+      <tr>
+        <% row[:values].each do |diff| %>
+          <td style="color:
+            <%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'orange' %>;">
+            <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+</div>

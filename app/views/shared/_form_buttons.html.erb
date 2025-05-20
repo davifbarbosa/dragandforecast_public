@@ -1,0 +1,35 @@
+<div class="buttons">
+  <div class="number-format">
+    <label><input type="radio" name="number-format" value="us" checked> Decimals Format (.)</label>
+    <label><input type="radio" name="number-format" value="eu"> Decimals Format (,)</label>
+  </div>
+  <br>
+  <div style="display: inline-flex; align-items: center; gap: 10px;">
+    <%= form_with url: forecast_rows_path, local: true, html: { multipart: true, id: 'import-form', style: 'display: inline-block;' } do |form| %>
+      <label for="upload-template" class="custom-button">Upload Template</label>
+      <%= form.file_field :file, id: 'upload-template', accept: '.csv', class: 'd-none' %>
+      <%= form.submit "Import template", class: 'd-none' %>
+    <% end %>
+
+    <%= form_with url: actuals_path, local: true, html: { multipart: true, id: 'actuals-import-form', style: 'display: inline-block;' } do |form| %>
+      <label for="upload-actuals" class="custom-button">Upload de Actuals</label>
+      <%= form.file_field :file, id: 'upload-actuals', accept: '.csv', class: 'd-none' %>
+      <%= form.submit "Import actuals CSV", class: 'd-none' %>
+    <% end %>
+
+    <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
+    <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
+
+    <%= button_to 'Clear Forecast', destroy_all_forecast_rows_path,
+                  local: false,
+                  method: :delete,
+                  data: { turbo: false, turbo_confirm: 'Are you sure you want to delete all forecast?' },
+                  class: 'btn btn-danger' %>
+
+    <%= button_to 'Clear Actuals', destroy_all_actuals_path,
+                  local: false,
+                  method: :delete,
+                  data: { turbo: false, turbo_confirm: 'Are you sure you want to delete all forecast?' },
+                  class: 'btn btn-danger' %>
+  </div>
+</div>
