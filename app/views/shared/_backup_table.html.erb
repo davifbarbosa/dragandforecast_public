@@ -1,3 +1,18 @@
+<%
+  # Assuming @forecast_rows_header is an array of strings like your example:
+  priority = ["Product", "Category", "Sub-Category"]
+
+  @forecast_rows_backup_header = @forecast_rows_backup_header.sort_by do |key|
+    if priority.include?(key)
+      # Give priority items a smaller sort index to appear first
+      priority.index(key)
+    else
+      # All other keys come after priority keys, keep their original order or sort them alphabetically
+      priority.size + 1
+    end
+  end
+%>
+
 <div class="data-table-wrapper">
   <h3>Tabela Original (Backup)</h3>
   <table class="data-table">

@@ -6,7 +6,7 @@
        if params[:avg1_filter_applied] == "true"
          Array(params[:avg1_selected_dates]) # use empty array if user unchecked all
        else
-         @avg.first(3) # default
+         @avg.first(3) if @avg.present? # default
        end
   %>
 
@@ -14,7 +14,7 @@
        if params[:avg2_filter_applied] == "true"
          Array(params[:avg2_selected_dates])
        else
-         @avg.first(6)
+         @avg.first(6) if @avg.present?
        end
   %>
   <div class="filter-container">

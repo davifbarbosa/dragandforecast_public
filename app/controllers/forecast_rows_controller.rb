@@ -8,6 +8,7 @@ class ForecastRowsController < BaseController
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
       @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
@@ -64,6 +65,7 @@ class ForecastRowsController < BaseController
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", params[:subcategory])
       @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Sub_Category' = ?", params[:subcategory])
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
@@ -121,6 +123,7 @@ class ForecastRowsController < BaseController
     elsif params[:category].present? && params[:category] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
       @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Category' = ?", params[:category])
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
@@ -250,9 +253,8 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-
       table_difference
-
+      @modify_table_forecast_rows = forecast_rows1
     end
 
 
@@ -337,6 +339,8 @@ class ForecastRowsController < BaseController
 
     @all_keys = []
 
+    priority_cols = ["Product", "Category", "Sub-Category"]
+
     @forecast_rows.each do |row|
       backup = row.forecast_row_backup
       next unless backup
@@ -351,10 +355,15 @@ class ForecastRowsController < BaseController
         original = backup_data[key]
         updated = current_data[key]
 
-        if is_numeric?(original) && is_numeric?(updated)
-          (updated.to_f - original.to_f).round(2)
+        if priority_cols.include?(key)
+          # Show original text value for these columns
+          original.to_s
         else
-          original.to_s == updated.to_s ? 0 : 'changed'
+          if is_numeric?(original) && is_numeric?(updated)
+            (updated.to_f - original.to_f).round(2)
+          else
+            original.to_s == updated.to_s ? 0 : 'changed'
+          end
         end
       end
 
@@ -363,14 +372,14 @@ class ForecastRowsController < BaseController
         values: differences
       }
     end
-
-    @all_keys.sort!
   end
 
   def single_row_difference(forecast_id)
     @forecast_row = ForecastRow.includes(:forecast_row_backup).find(forecast_id)
     @comparison_data = []
     @all_keys = []
+
+    priority_cols = ["Product", "Category", "Sub-Category"]
 
     backup = @forecast_row.forecast_row_backup
     if backup
@@ -384,10 +393,15 @@ class ForecastRowsController < BaseController
         original = backup_data[key]
         updated = current_data[key]
 
-        if is_numeric?(original) && is_numeric?(updated)
-          (updated.to_f - original.to_f).round(2)
+        if priority_cols.include?(key)
+          # Show original text value for these columns
+          original.to_s
         else
-          original.to_s == updated.to_s ? 0 : 'changed'
+          if is_numeric?(original) && is_numeric?(updated)
+            (updated.to_f - original.to_f).round(2)
+          else
+            original.to_s == updated.to_s ? 0 : 'changed'
+          end
         end
       end
 

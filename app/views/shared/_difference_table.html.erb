@@ -1,9 +1,11 @@
 <div class="data-table-wrapper">
   <h3>Tabela de Diferenças</h3>
   <table class="data-table">
-    <thead id="difference-table-headers"></thead>
+    <thead id="difference-table-headers">
     <tr>
-      <% @all_keys.each do |key| %>
+      <% priority = ["Category", "Product", "Sub-Category"] %>
+      <% reordered_keys = priority + (@all_keys - priority) %>
+      <% reordered_keys.each do |key| %>
         <th><%= key %></th>
       <% end %>
     </tr>
@@ -11,7 +13,12 @@
     <tbody id="difference-table-body">
     <% @comparison_data.each do |row| %>
       <tr>
-        <% row[:values].each do |diff| %>
+        <% reordered_keys.each do |key| %>
+          <%
+            # Find the index of this key in the original keys (@all_keys)
+            original_index = @all_keys.index(key)
+            diff = row[:values][original_index]
+          %>
           <td style="color:
             <%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'orange' %>;">
             <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
