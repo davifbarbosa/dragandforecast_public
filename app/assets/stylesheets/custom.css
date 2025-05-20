@@ -31,7 +31,7 @@ br {
 #forecast-chart {
   display: block;
   width: 100%; /* Gráfico ocupa 100% da largura do contêiner */
-  height: 300px; /* Reduz a altura do gráfico */
+  height: 400px; /* Reduz a altura do gráfico */
 }
 
 .custom-button {

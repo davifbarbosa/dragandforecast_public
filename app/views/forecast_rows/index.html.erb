@@ -23,6 +23,13 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".auto-submit-checkbox").forEach(function (checkbox) {
+            checkbox.addEventListener("change", function () {
+                document.getElementById("filter-form").submit();
+            });
+        });
+    });
     function toggleDropdown(dropdownId) {
         const dropdown = document.getElementById(dropdownId);
         dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
@@ -171,8 +178,6 @@
             updateSelectFromRadio(checkedRadio.value);
         }
     });
-
-
     document.addEventListener("DOMContentLoaded", function () {
         const fileInput = document.getElementById("upload-template");
 
@@ -195,8 +200,8 @@
     let actuals = [];
     let isDarkMode = false;
     let originalValue = null;
-    const sumOfAverages1 = <%= @sum_of_averages1 %>;
-    const sumOfAverages2 = <%= @sum_of_averages2 %>;
+    const sumOfAverages1 = <%= @average1 ? @average1 : '[]' %>;
+    const sumOfAverages2 = <%= @average2 ? @average2 : '[]' %>;
     const rawData = <%= raw(@forecast_rows.to_json) %>;
     const labels = Object.keys(rawData[0].data);
     const values = labels.map(key => parseFloat(rawData[0].data[key]));
@@ -208,11 +213,8 @@
     }else {
         actuals =  []
     }
-    <!--    const forecast_rows_backup = <%#= raw(@forecast_rows_backup.to_json) %>;-->
-    // const labels_backup = Object.keys(forecast_rows_backup[0].data);// Create independent backup data
-    // const original_backup = labels_backup.map(key => parseFloat(forecast_rows_backup[0].data[key]));
-    const rowId = rawData[0].id;
 
+    const rowId = rawData[0].id;
     const split1 = 12;
     const split2 = 24;
     const colors = values.map((_, i) => {
@@ -305,7 +307,7 @@
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             layout: {
                 padding: {
                     top: 50,

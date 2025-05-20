@@ -1,85 +1,101 @@
-<div class="filter-container">
-  <label for="filter-search">Search:</label>
-  <input type="text" id="filter-search" oninput="searchFilterOptions()" placeholder="Search...">
-  <%#= form_with url: your_path, method: :get do %>
-  <div class="custom-dropdown">
-    <button class="dropdown-btn" id="dropdown-btn-3m">Avg-1 ▼</button>
-    <% if @avg.present? %>
-      <div class="dropdown-content" id="dropdown-content-3m" style="display: none;">
-        <% @avg.each_with_index do |date, index| %>
-          <div>
-            <%= label_tag  do %>
-              <%= check_box_tag 'avg1_selected_dates[]', date, index < 3, id: "date_#{index}" %>
-              <%= date %>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
-  <div class="custom-dropdown">
-    <button class="dropdown-btn" id="dropdown-btn-6m">Avg-2 ▼</button>
-    <% if @avg.present? %>
-      <div class="dropdown-content" id="dropdown-content-6m" style="display: none;">
-        <% @avg.each_with_index do |date, index| %>
-          <div>
-            <%= label_tag  do %>
-              <%= check_box_tag 'avg2_selected_dates[]', date, index < 6, id: "date_#{index}" %>
-              <%= date %>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
-  <%#= submit_tag 'Submit' %>
-  <%# end %>
-  <br>
-  <div class="controls">
-    <div id="level-selector">
-      <% default_level = if params[:product].present?
-                           'product'
-                         elsif params[:subcategory].present?
-                           'subcategory'
-                         elsif params[:category].present?
-                           'category'
-                         else
-                           'product' # default selection
-                         end %>
+<%= form_with url: forecast_rows_path, method: :get, local: true, id: 'filter-form',
+              html: { class: "d-inline" } do %>
+  <%= hidden_field_tag :avg1_filter_applied, "true" %>
+  <%= hidden_field_tag :avg2_filter_applied, "true" %>
+  <% selected_avg1 =
+       if params[:avg1_filter_applied] == "true"
+         Array(params[:avg1_selected_dates]) # use empty array if user unchecked all
+       else
+         @avg.first(3) # default
+       end
+  %>
 
-      <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', id: 'level_product' %>
-      <%= label_tag 'level_product', 'Product' %>
-
-      <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', id: 'level_subcategory' %>
-      <%= label_tag 'level_subcategory', 'Sub-Category' %>
-
-      <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', id: 'level_category' %>
-      <%= label_tag 'level_category', 'Category' %>
-
+  <% selected_avg2 =
+       if params[:avg2_filter_applied] == "true"
+         Array(params[:avg2_selected_dates])
+       else
+         @avg.first(6)
+       end
+  %>
+  <div class="filter-container">
+    <label for="filter-search">Search:</label>
+    <input type="text" id="filter-search" oninput="searchFilterOptions()" placeholder="Search...">
+    <div class="custom-dropdown">
+      <!--      <button class="dropdown-btn" id="dropdown-btn-3m">Avg-1 ▼</button>-->
+      <button type="button" class="dropdown-btn" id="dropdown-btn-3m">Avg-1 ▼</button>
+      <% if @avg.present? %>
+        <div class="dropdown-content" id="dropdown-content-3m" style="display: none;">
+          <% @avg.each_with_index do |date, index| %>
+            <div>
+              <%= label_tag  do %>
+                <%= check_box_tag 'avg1_selected_dates[]', date, selected_avg1.include?(date), id: "avg1_date_#{index}", class: "auto-submit-checkbox" %>
+                <%= date %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
     </div>
-  </div>
-  <label for="filter-select">Filter by:</label>
-  <!-- Hidden containers to hold different select options -->
-  <div id="type_products" class="d-none">
-    <%= select_tag :product, options_for_select(@product_names), id: "product-select" %>
-  </div>
-  <div id="type_subcategories" class="d-none">
-    <%= select_tag :subcategory, options_for_select(@subcategories), id: "subcategory-select" %>
-  </div>
-  <div id="type_categories" class="d-none">
-    <%= select_tag :category, options_for_select(@categories), id: "category-select" %>
-  </div>
-  <div class="d-inline-flex align-items-center gap-2">
-    <%= form_with url: forecast_rows_path, method: :get, local: true, id: 'filter-form', html: { class: "d-inline" } do %>
+    <div class="custom-dropdown">
+      <button type="button" class="dropdown-btn" id="dropdown-btn-6m">Avg-2 ▼</button>
+      <!--      <button class="dropdown-btn" id="dropdown-btn-6m">Avg-2 ▼</button>-->
+      <% if @avg.present? %>
+        <div class="dropdown-content" id="dropdown-content-6m" style="display: none;">
+          <% @avg.each_with_index do |date, index| %>
+            <div>
+              <%= label_tag  do %>
+                <%= check_box_tag 'avg2_selected_dates[]', date, selected_avg2.include?(date), id: "avg2_date_#{index}", class: "auto-submit-checkbox" %>
+                <%= date %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <br>
+    <div class="controls">
+      <div id="level-selector">
+        <% default_level = if params[:product].present?
+                             'product'
+                           elsif params[:subcategory].present?
+                             'subcategory'
+                           elsif params[:category].present?
+                             'category'
+                           else
+                             'product' # default selection
+                           end %>
+
+        <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', id: 'level_product' %>
+        <%= label_tag 'level_product', 'Product' %>
+
+        <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', id: 'level_subcategory' %>
+        <%= label_tag 'level_subcategory', 'Sub-Category' %>
+
+        <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', id: 'level_category' %>
+        <%= label_tag 'level_category', 'Category' %>
+
+      </div>
+    </div>
+    <label for="filter-select">Filter by:</label>
+    <!-- Hidden containers to hold different select options -->
+    <div id="type_products" class="d-none">
+      <%= select_tag :product, options_for_select(@product_names), id: "product-select" %>
+    </div>
+    <div id="type_subcategories" class="d-none">
+      <%= select_tag :subcategory, options_for_select(@subcategories), id: "subcategory-select" %>
+    </div>
+    <div id="type_categories" class="d-none">
+      <%= select_tag :category, options_for_select(@categories), id: "category-select" %>
+    </div>
+    <div class="d-inline-flex align-items-center gap-2">
       <%= hidden_field_tag :level, params[:level] || 'product', id: 'level-hidden' %>
       <div id="filters_type">
         <!-- default select -->
         <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
       </div>
-      <%= submit_tag "Filter", class: 'd-none' %>
-    <% end %>
-
-    <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
-    <button onclick="navigateFilter('next')" class="custom-button">Next</button>
+      <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
+      <button onclick="navigateFilter('next')" class="custom-button">Next</button>
+    </div>
   </div>
-</div>
+  <%= submit_tag "Filter", class: 'd-none' %>
+<% end %>
