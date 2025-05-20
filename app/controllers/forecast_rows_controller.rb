@@ -1,7 +1,9 @@
 class ForecastRowsController < BaseController
   before_action :check_uploaded_file, only: %i[ create ]
   def index
+    #common
     forecast_rows = current_user.forecast_rows
+
     forecast_row_backups = current_user.forecast_row_backups
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
@@ -12,9 +14,15 @@ class ForecastRowsController < BaseController
       @forecast_rows = forecast_rows.all.order(:id)
       @forecast_rows_backup = forecast_row_backups.all.order(:id)
     end
+    #Common totals
     @product_names = ["Total"] + forecast_rows.all.map { |row| row.data["Product"] }.uniq
     @subcategories = ["Total"] + forecast_rows.all.map { |row| row.data["Sub-Category"] }.uniq
     @categories = ["Total"] + forecast_rows.all.map { |row| row.data["Category"] }.uniq
+
+    #Common Avg
+    avg_keys = forecast_rows.first.data.keys
+    @avg1 = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
+
     @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
     @forecast_rows_header = @forecast_rows_backup_header
     @sum_of_averages1 = first_three_months_average(1)

@@ -23,7 +23,27 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
+    }
+    window.addEventListener("click", function (event) {
+        if (!event.target.closest(".custom-dropdown")) {
+            document.getElementById("dropdown-content-3m").style.display = "none";
+            document.getElementById("dropdown-content-6m").style.display = "none";
+        }
+    });
 
+    // Adiciona eventos de clique aos botões do dropdown
+    document.getElementById("dropdown-btn-3m").addEventListener("click", function (event) {
+        event.stopPropagation(); // Impede que o clique feche o dropdown imediatamente
+        toggleDropdown("dropdown-content-3m");
+    });
+
+    document.getElementById("dropdown-btn-6m").addEventListener("click", function (event) {
+        event.stopPropagation();
+        toggleDropdown("dropdown-content-6m");
+    });
     function searchFilterOptions() {
         const input = document.getElementById("filter-search");
         const filter = input.value.toLowerCase();

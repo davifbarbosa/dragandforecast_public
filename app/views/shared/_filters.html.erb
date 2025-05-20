@@ -1,14 +1,35 @@
 <div class="filter-container">
   <label for="filter-search">Search:</label>
   <input type="text" id="filter-search" oninput="searchFilterOptions()" placeholder="Search...">
+  <%#= form_with url: your_path, method: :get do %>
   <div class="custom-dropdown">
     <button class="dropdown-btn" id="dropdown-btn-3m">Avg-1 ▼</button>
-    <div class="dropdown-content" id="dropdown-content-3m"></div>
+    <div class="dropdown-content" id="dropdown-content-3m" style="display: none;">
+      <% @avg1.each_with_index do |date, index| %>
+        <div>
+          <%= label_tag  do %>
+            <%= check_box_tag 'avg1_selected_dates[]', date, index < 3, id: "date_#{index}" %>
+            <%= date %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
   </div>
   <div class="custom-dropdown">
     <button class="dropdown-btn" id="dropdown-btn-6m">Avg-2 ▼</button>
-    <div class="dropdown-content" id="dropdown-content-6m"></div>
+    <div class="dropdown-content" id="dropdown-content-6m" style="display: none;">
+      <% @avg1.each_with_index do |date, index| %>
+        <div>
+          <%= label_tag  do %>
+            <%= check_box_tag 'avg2_selected_dates[]', date, index < 6, id: "date_#{index}" %>
+            <%= date %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
   </div>
+  <%#= submit_tag 'Submit' %>
+  <%# end %>
   <br>
   <div class="controls">
     <div id="level-selector">
