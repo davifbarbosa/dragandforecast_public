@@ -5,7 +5,8 @@ class ForecastRowsController < BaseController
     forecast_row_backups = current_user.forecast_row_backups
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
-      @forecast_rows = forecast_rows.where("data ->> 'Product' = ?", params[:product])
+      forecast_rows = forecast_rows.where("data ->> 'Product' = ?", params[:product])
+      @forecast_rows = forecast_rows
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
     else
       @forecast_rows = forecast_rows.all.order(:id)

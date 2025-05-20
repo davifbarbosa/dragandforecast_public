@@ -53,14 +53,25 @@
         <br>
         <div class="controls">
           <div id="level-selector">
-            <%= radio_button_tag 'level', 'product', params[:product].present? ? true : false, class: 'level-radio', id: 'level_product' %>
+            <% default_level = if params[:product].present?
+                                 'product'
+                               elsif params[:subcategory].present?
+                                 'subcategory'
+                               elsif params[:category].present?
+                                 'category'
+                               else
+                                 'product' # default selection
+                               end %>
+
+            <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', id: 'level_product' %>
             <%= label_tag 'level_product', 'Product' %>
 
-            <%= radio_button_tag 'level', 'subcategory', params[:subcategory].present? ? true : false, class: 'level-radio', id: 'level_subcategory' %>
+            <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', id: 'level_subcategory' %>
             <%= label_tag 'level_subcategory', 'Sub-Category' %>
 
-            <%= radio_button_tag 'level', 'category', params[:category].present? ? true : false, class: 'level-radio', id: 'level_category' %>
+            <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', id: 'level_category' %>
             <%= label_tag 'level_category', 'Category' %>
+
           </div>
         </div>
         <label for="filter-select">Filter by:</label>
@@ -319,6 +330,7 @@
             updateSelectFromRadio(checkedRadio.value);
         }
     });
+
 
     document.addEventListener("DOMContentLoaded", function () {
         const fileInput = document.getElementById("upload-template");
