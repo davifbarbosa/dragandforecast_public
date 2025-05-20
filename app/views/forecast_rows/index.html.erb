@@ -53,13 +53,13 @@
         <br>
         <div class="controls">
           <div id="level-selector">
-            <%= radio_button_tag 'level', 'product', true, class: 'level-radio', id: 'level_product' %>
+            <%= radio_button_tag 'level', 'product', params[:product].present? ? true : false, class: 'level-radio', id: 'level_product' %>
             <%= label_tag 'level_product', 'Product' %>
 
-            <%= radio_button_tag 'level', 'subcategory', false, class: 'level-radio', id: 'level_subcategory' %>
+            <%= radio_button_tag 'level', 'subcategory', params[:subcategory].present? ? true : false, class: 'level-radio', id: 'level_subcategory' %>
             <%= label_tag 'level_subcategory', 'Sub-Category' %>
 
-            <%= radio_button_tag 'level', 'category', false, class: 'level-radio', id: 'level_category' %>
+            <%= radio_button_tag 'level', 'category', params[:category].present? ? true : false, class: 'level-radio', id: 'level_category' %>
             <%= label_tag 'level_category', 'Category' %>
           </div>
         </div>
@@ -74,10 +74,11 @@
         <div id="type_categories" class="d-none">
           <%= select_tag :category, options_for_select(@categories), id: "category-select" %>
         </div>
-
         <div class="d-inline-flex align-items-center gap-2">
           <%= form_with url: forecast_rows_path, method: :get, local: true, id: 'filter-form', html: { class: "d-inline" } do %>
+            <%= hidden_field_tag :level, params[:level] || 'product', id: 'level-hidden' %>
             <div id="filters_type">
+              <!-- default select -->
               <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
             </div>
             <%= submit_tag "Filter", class: 'd-none' %>
@@ -86,7 +87,6 @@
           <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
           <button onclick="navigateFilter('next')" class="custom-button">Next</button>
         </div>
-
       </div>
       <div class="color-controls">
         <label>Green Periods:</label>
@@ -108,10 +108,7 @@
         <div class="total highlight-green" id="total-2025">FILTERED 2025:<br> <span>0</span></div>
         <div class="total highlight-gray" id="total-2026">FILTERED 2026:<br> <span>0</span></div>
       </div>
-
     </div>
-
-    <!-- Conteúdo rolável -->
     <div class="scrollable-content">
       <div id="chart-container">
         <canvas id="forecast-chart" height="300"></canvas>
@@ -258,49 +255,68 @@
         document.getElementById('filter-form').submit();
     }
     document.addEventListener('DOMContentLoaded', function () {
-        // Radio button logic
         const radios = document.querySelectorAll('.level-radio');
         const filtersContainer = document.getElementById('filters_type');
+        const levelHidden = document.getElementById('level-hidden');
 
-        radios.forEach(radio => {
-            radio.addEventListener('change', function () {
-                let sourceId = '';
-                switch (this.value) {
-                    case 'product':
-                        sourceId = 'type_products';
-                        break;
-                    case 'subcategory':
-                        sourceId = 'type_subcategories';
-                        break;
-                    case 'category':
-                        sourceId = 'type_categories';
-                        break;
-                }
+        function updateSelectFromRadio(value) {
+            let sourceId = '';
+            let selectedValue = ''; // Will fetch from URL params
 
-                const sourceDiv = document.getElementById(sourceId);
-                if (sourceDiv) {
-                    filtersContainer.innerHTML = sourceDiv.innerHTML;
+            switch (value) {
+                case 'product':
+                    sourceId = 'type_products';
+                    selectedValue = new URLSearchParams(window.location.search).get('product');
+                    break;
+                case 'subcategory':
+                    sourceId = 'type_subcategories';
+                    selectedValue = new URLSearchParams(window.location.search).get('subcategory');
+                    break;
+                case 'category':
+                    sourceId = 'type_categories';
+                    selectedValue = new URLSearchParams(window.location.search).get('category');
+                    break;
+            }
 
-                    // Assign a common ID if needed
-                    const newSelect = filtersContainer.querySelector('select');
-                    if (newSelect) {
-                        newSelect.id = 'filter-select';
+            const sourceDiv = document.getElementById(sourceId);
+            if (sourceDiv) {
+                filtersContainer.innerHTML = sourceDiv.innerHTML;
 
-                        // Attach change listener immediately
-                        newSelect.addEventListener("change", function () {
-                            this.form.submit();
+                const newSelect = filtersContainer.querySelector('select');
+                if (newSelect) {
+                    newSelect.id = 'filter-select';
+
+                    // Restore selected option
+                    if (selectedValue) {
+                        Array.from(newSelect.options).forEach(option => {
+                            if (option.value === selectedValue) {
+                                option.selected = true;
+                            }
                         });
                     }
+
+                    // Submit on change
+                    newSelect.addEventListener("change", function () {
+                        this.form.submit();
+                    });
                 }
+            }
+
+            // Set the hidden input value
+            if (levelHidden) levelHidden.value = value;
+        }
+
+        // Apply listeners on radio buttons
+        radios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                updateSelectFromRadio(this.value);
             });
         });
 
-        // Attach listener to the initial select
-        const initialSelect = document.getElementById('filter-select');
-        if (initialSelect) {
-            initialSelect.addEventListener("change", function () {
-                this.form.submit();
-            });
+        // On page load: find the checked radio and update
+        const checkedRadio = document.querySelector('.level-radio:checked');
+        if (checkedRadio) {
+            updateSelectFromRadio(checkedRadio.value);
         }
     });
 
@@ -538,7 +554,6 @@
         plugins: [ChartDataLabels]
     });
 </script>
-
 <div class="loading-popup" style="display: none;">
   <p>Processing data... Please wait.</p>
 </div>
