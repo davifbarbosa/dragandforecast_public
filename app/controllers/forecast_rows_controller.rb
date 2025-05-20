@@ -2,12 +2,12 @@ class ForecastRowsController < BaseController
   before_action :check_uploaded_file, only: %i[ create ]
   def index
     #common
-    forecast_rows = current_user.forecast_rows
+    forecast_rows1 = current_user.forecast_rows
 
     forecast_row_backups = current_user.forecast_row_backups
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
-      forecast_rows = forecast_rows.where("data ->> 'Product' = ?", params[:product])
+      forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
       @forecast_rows = clean_forecastrow(forecast_rows)
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
@@ -57,7 +57,7 @@ class ForecastRowsController < BaseController
         end
       end
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
-      forecast_rows = forecast_rows.where("data ->> 'Sub_Category' = ?", params[:subcategory])
+      forecast_rows = forecast_rows1.where("data ->> 'Sub_Category' = ?", params[:subcategory])
       @forecast_rows = clean_forecastrow(forecast_rows)
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Sub_Category' = ?", params[:subcategory])
@@ -72,6 +72,7 @@ class ForecastRowsController < BaseController
           @totals_by_column[key] += numeric_value
         end
       end
+      # debugger
       forecast_id = forecast_rows.last.id
       single_row_difference(forecast_id)
       # Handle Avg1
@@ -108,7 +109,7 @@ class ForecastRowsController < BaseController
       end
 
     elsif params[:category].present? && params[:category] != "Total"
-      forecast_rows = forecast_rows.where("data ->> 'Category' = ?", params[:category])
+      forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
       @forecast_rows = clean_forecastrow(forecast_rows)
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Category' = ?", params[:category])
@@ -158,14 +159,14 @@ class ForecastRowsController < BaseController
         end
       end
     else
-      @forecast_rows = clean_forecastrow(forecast_rows)
+      @forecast_rows = clean_forecastrow(forecast_rows1)
       @forecast_rows_backup = forecast_row_backups.all.order(:id)
 
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
       @forecast_rows_header = @forecast_rows_backup_header
 
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-      clean_forecast_rows = clean_forecastrow(forecast_rows)
+      clean_forecast_rows = clean_forecastrow(forecast_rows1)
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
@@ -234,7 +235,7 @@ class ForecastRowsController < BaseController
 
 
     @totals_by_year = Hash.new(0) # default value 0
-    clean_forecast_rows = clean_forecastrow(forecast_rows)
+    clean_forecast_rows = clean_forecastrow(forecast_rows1)
     clean_forecast_rows.each do |forecast|
       forecast[:data].each do |key, value|
         numeric_value = value.to_f
@@ -247,13 +248,13 @@ class ForecastRowsController < BaseController
 
 
     #Common filters
-    @product_names = ["Total"] + forecast_rows.all.map { |row| row.data["Product"] }.uniq
-    @subcategories = ["Total"] + forecast_rows.all.map { |row| row.data["Sub-Category"] }.uniq
-    @categories = ["Total"] + forecast_rows.all.map { |row| row.data["Category"] }.uniq
+    @product_names = ["Total"] + forecast_rows1.all.map { |row| row.data["Product"] }.uniq
+    @subcategories = ["Total"] + forecast_rows1.all.map { |row| row.data["Sub-Category"] }.uniq
+    @categories = ["Total"] + forecast_rows1.all.map { |row| row.data["Category"] }.uniq
 
     #Common Avg filters
-    if forecast_rows.present?
-      avg_keys = forecast_rows.first.data.keys
+    if forecast_rows1.present?
+      avg_keys = forecast_rows1.first.data.keys
       @avg = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
     end
   end

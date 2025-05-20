@@ -79,19 +79,21 @@
     <label for="filter-select">Filter by:</label>
     <!-- Hidden containers to hold different select options -->
     <div id="type_products" class="d-none">
-      <%= select_tag :product, options_for_select(@product_names), id: "product-select" %>
+      <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "product-select" %>
     </div>
     <div id="type_subcategories" class="d-none">
-      <%= select_tag :subcategory, options_for_select(@subcategories), id: "subcategory-select" %>
+      <%= select_tag :subcategory, options_for_select(@subcategories, params[:subcategory]), id: "subcategory-select" %>
     </div>
     <div id="type_categories" class="d-none">
-      <%= select_tag :category, options_for_select(@categories), id: "category-select" %>
+      <%= select_tag :category, options_for_select(@categories, params[:category]), id: "category-select" %>
     </div>
     <div class="d-inline-flex align-items-center gap-2">
       <%= hidden_field_tag :level, params[:level] || 'product', id: 'level-hidden' %>
       <div id="filters_type">
-        <!-- default select -->
-        <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
+        <%# debugger %>
+        <% if params[:product].present?  %>
+          <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
+        <% end %>
       </div>
       <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
       <button onclick="navigateFilter('next')" class="custom-button">Next</button>
