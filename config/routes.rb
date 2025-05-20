@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   post 'clear_actuals', to: 'forecast#clear_actuals'
   post 'create-backup', to: 'dashboard#create_backup'
   get 'forecast', to: 'forecast_rows#index', as: 'forecast'
+  get 'load_select', to: 'forecast_rows#load_select'
   resources :forecast_rows, only: [:index, :create, :update]
   resources :forecast_rows do
     collection do

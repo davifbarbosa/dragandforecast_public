@@ -65,34 +65,31 @@
                              'product' # default selection
                            end %>
 
-        <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', id: 'level_product' %>
+        <!-- Radio Buttons -->
+        <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', data: { url: load_select_path(level: 'product') }, id: 'level_product' %>
         <%= label_tag 'level_product', 'Product' %>
 
-        <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', id: 'level_subcategory' %>
+        <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', data: { url: load_select_path(level: 'subcategory') }, id: 'level_subcategory' %>
         <%= label_tag 'level_subcategory', 'Sub-Category' %>
 
-        <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', id: 'level_category' %>
+        <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', data: { url: load_select_path(level: 'category') }, id: 'level_category' %>
         <%= label_tag 'level_category', 'Category' %>
 
       </div>
     </div>
     <label for="filter-select">Filter by:</label>
-    <!-- Hidden containers to hold different select options -->
-    <div id="type_products" class="d-none">
-      <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "product-select" %>
-    </div>
-    <div id="type_subcategories" class="d-none">
-      <%= select_tag :subcategory, options_for_select(@subcategories, params[:subcategory]), id: "subcategory-select" %>
-    </div>
-    <div id="type_categories" class="d-none">
-      <%= select_tag :category, options_for_select(@categories, params[:category]), id: "category-select" %>
-    </div>
     <div class="d-inline-flex align-items-center gap-2">
       <%= hidden_field_tag :level, params[:level] || 'product', id: 'level-hidden' %>
       <div id="filters_type">
-        <% if params[:product].present?  %>
-          <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
-        <% end %>
+        <div id="select-container">
+          <% if params[:product].present? %>
+            <%= render partial: "forecast_rows/product_select" %>
+          <% elsif params[:subcategory].present?%>
+            <%= render partial: "forecast_rows/subcategory_select" %>
+          <% elsif params[:category].present?%>
+            <%= render partial: "forecast_rows/category_select" %>
+          <% end %>
+        </div>
       </div>
       <button onclick="navigateFilter('previous')" class="custom-button">Previous</button>
       <button onclick="navigateFilter('next')" class="custom-button">Next</button>

@@ -3,7 +3,6 @@ class ForecastRowsController < BaseController
   def index
     #common
     forecast_rows1 = current_user.forecast_rows
-
     forecast_row_backups = current_user.forecast_row_backups
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
@@ -57,7 +56,7 @@ class ForecastRowsController < BaseController
         end
       end
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
-      forecast_rows = forecast_rows1.where("data ->> 'Sub_Category' = ?", params[:subcategory])
+      forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", params[:subcategory])
       @forecast_rows = clean_forecastrow(forecast_rows)
       #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Sub_Category' = ?", params[:subcategory])
@@ -72,7 +71,6 @@ class ForecastRowsController < BaseController
           @totals_by_column[key] += numeric_value
         end
       end
-      # debugger
       forecast_id = forecast_rows.last.id
       single_row_difference(forecast_id)
       # Handle Avg1
@@ -291,6 +289,20 @@ class ForecastRowsController < BaseController
     current_user.forecast_rows.destroy_all
     current_user.forecast_row_backups.destroy_all
     redirect_to forecast_rows_path, notice: 'Forecast Database clear.'
+  end
+  def load_select
+    forecast_rows1 = current_user.forecast_rows
+    level = params[:level]
+    case level
+    when 'product'
+      @product_names = ["Total"] + forecast_rows1.all.map { |row| row.data["Product"] }.uniq
+    when 'subcategory'
+      @subcategories = ["Total"] + forecast_rows1.all.map { |row| row.data["Sub-Category"] }.uniq
+    when 'category'
+      @categories = ["Total"] + forecast_rows1.all.map { |row| row.data["Category"] }.uniq
+    end
+
+    render partial: "#{level}_select"
   end
 
   # app/controllers/forecast_rows_controller.rb

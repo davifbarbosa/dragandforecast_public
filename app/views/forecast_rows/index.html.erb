@@ -23,6 +23,27 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
+
+    function applyUpdates() {
+        document.getElementById("filter-form").submit();
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".level-radio").forEach(radio => {
+            radio.addEventListener("change", function () {
+                console.log('here');
+                const url = this.dataset.url;
+
+                fetch(url)
+                  .then(response => response.text())
+                  .then(html => {
+                      document.getElementById("select-container").innerHTML = html;
+                  });
+            });
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".auto-submit-checkbox").forEach(function (checkbox) {
             checkbox.addEventListener("change", function () {
