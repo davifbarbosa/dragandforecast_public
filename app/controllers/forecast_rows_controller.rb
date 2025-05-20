@@ -9,12 +9,244 @@ class ForecastRowsController < BaseController
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows.where("data ->> 'Product' = ?", params[:product])
       @forecast_rows = clean_forecastrow(forecast_rows)
+      #Single backup table data
       @forecast_rows_backup = forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+      @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_forecast_rows = clean_forecastrow(forecast_rows)
+      clean_forecast_rows.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @totals_by_column[key] += numeric_value
+        end
+      end
+      forecast_id = forecast_rows.last.id
+      single_row_difference(forecast_id)
+      # Handle Avg1
+      if params[:avg1_filter_applied] == "true"
+        if params[:avg1_selected_dates].present?
+          keys = params[:avg1_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average1 = matching_values.sum / matching_values.size
+        else
+          @average1 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_three_values = @totals_by_column.values.first(3)
+          @average1 = first_three_values.sum / first_three_values.size
+        end
+      end
+      # Handle Avg2
+      if params[:avg2_filter_applied] == "true"
+        if params[:avg2_selected_dates].present?
+          keys = params[:avg2_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average2 = matching_values.sum / matching_values.size
+        else
+          @average2 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_six_values = @totals_by_column.values.first(6)
+          @average2 = first_six_values.sum / first_six_values.size
+        end
+      end
+    elsif params[:subcategory].present? && params[:subcategory] != "Total"
+      forecast_rows = forecast_rows.where("data ->> 'Sub_Category' = ?", params[:subcategory])
+      @forecast_rows = clean_forecastrow(forecast_rows)
+      #Single backup table data
+      @forecast_rows_backup = forecast_row_backups.where("data ->> 'Sub_Category' = ?", params[:subcategory])
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+      @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_forecast_rows = clean_forecastrow(forecast_rows)
+      clean_forecast_rows.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @totals_by_column[key] += numeric_value
+        end
+      end
+      forecast_id = forecast_rows.last.id
+      single_row_difference(forecast_id)
+      # Handle Avg1
+      if params[:avg1_filter_applied] == "true"
+        if params[:avg1_selected_dates].present?
+          keys = params[:avg1_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average1 = matching_values.sum / matching_values.size
+        else
+          @average1 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_three_values = @totals_by_column.values.first(3)
+          @average1 = first_three_values.sum / first_three_values.size
+        end
+      end
+      # Handle Avg2
+      if params[:avg2_filter_applied] == "true"
+        if params[:avg2_selected_dates].present?
+          keys = params[:avg2_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average2 = matching_values.sum / matching_values.size
+        else
+          @average2 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_six_values = @totals_by_column.values.first(6)
+          @average2 = first_six_values.sum / first_six_values.size
+        end
+      end
+
+    elsif params[:category].present? && params[:category] != "Total"
+      forecast_rows = forecast_rows.where("data ->> 'Category' = ?", params[:category])
+      @forecast_rows = clean_forecastrow(forecast_rows)
+      #Single backup table data
+      @forecast_rows_backup = forecast_row_backups.where("data ->> 'Category' = ?", params[:category])
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+      @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_forecast_rows = clean_forecastrow(forecast_rows)
+      clean_forecast_rows.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @totals_by_column[key] += numeric_value
+        end
+      end
+      forecast_id = forecast_rows.last.id
+      single_row_difference(forecast_id)
+      # Handle Avg1
+      if params[:avg1_filter_applied] == "true"
+        if params[:avg1_selected_dates].present?
+          keys = params[:avg1_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average1 = matching_values.sum / matching_values.size
+        else
+          @average1 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_three_values = @totals_by_column.values.first(3)
+          @average1 = first_three_values.sum / first_three_values.size
+        end
+      end
+      # Handle Avg2
+      if params[:avg2_filter_applied] == "true"
+        if params[:avg2_selected_dates].present?
+          keys = params[:avg2_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average2 = matching_values.sum / matching_values.size
+        else
+          @average2 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_six_values = @totals_by_column.values.first(6)
+          @average2 = first_six_values.sum / first_six_values.size
+        end
+      end
     else
       @forecast_rows = clean_forecastrow(forecast_rows)
       @forecast_rows_backup = forecast_row_backups.all.order(:id)
+
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+
+      @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_forecast_rows = clean_forecastrow(forecast_rows)
+      clean_forecast_rows.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @totals_by_column[key] += numeric_value
+        end
+      end
+
+      # Handle Avg1
+      if params[:avg1_filter_applied] == "true"
+        if params[:avg1_selected_dates].present?
+          keys = params[:avg1_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average1 = matching_values.sum / matching_values.size
+        else
+          @average1 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_three_values = @totals_by_column.values.first(3)
+          @average1 = first_three_values.sum / first_three_values.size
+        end
+      end
+
+      # Handle Avg2
+      if params[:avg2_filter_applied] == "true"
+        if params[:avg2_selected_dates].present?
+          keys = params[:avg2_selected_dates]
+          totals_hash = @totals_by_column.to_h
+          matching_values = keys.map { |key| totals_hash[key] }
+          @average2 = matching_values.sum / matching_values.size
+        else
+          @average2 = nil # user unchecked all -> no line
+        end
+      else
+        if @totals_by_column.present?
+          first_six_values = @totals_by_column.values.first(6)
+          @average2 = first_six_values.sum / first_six_values.size
+        end
+      end
+
+      @totals_backup_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_forecast_row_backups = clean_forecastrow_backups(forecast_row_backups)
+      clean_forecast_row_backups.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @totals_backup_by_column[key] += numeric_value
+        end
+      end
+
+      @actual_columns = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      clean_actuals = clean_actual_columns(actuals)
+      clean_actuals.each do |forecast|
+        forecast[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column
+          @actual_columns[key] += numeric_value
+        end
+      end
+
+      table_difference
+
     end
-    #Common totals
+
+
+    @totals_by_year = Hash.new(0) # default value 0
+    clean_forecast_rows = clean_forecastrow(forecast_rows)
+    clean_forecast_rows.each do |forecast|
+      forecast[:data].each do |key, value|
+        numeric_value = value.to_f
+        if key =~ /\b\d{4}\b/
+          year = key[/\d{4}/]
+          @totals_by_year[year] += numeric_value
+        end
+      end
+    end
+
+
+    #Common filters
     @product_names = ["Total"] + forecast_rows.all.map { |row| row.data["Product"] }.uniq
     @subcategories = ["Total"] + forecast_rows.all.map { |row| row.data["Sub-Category"] }.uniq
     @categories = ["Total"] + forecast_rows.all.map { |row| row.data["Category"] }.uniq
@@ -24,82 +256,6 @@ class ForecastRowsController < BaseController
       avg_keys = forecast_rows.first.data.keys
       @avg = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
     end
-
-    @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
-    @forecast_rows_header = @forecast_rows_backup_header
-
-    @totals_by_year = Hash.new(0) # default value 0
-    @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-    clean_forecast_rows = clean_forecastrow(forecast_rows)
-    clean_forecast_rows.each do |forecast|
-      forecast[:data].each do |key, value|
-        numeric_value = value.to_f
-        # Sum by column
-        @totals_by_column[key] += numeric_value
-        # Sum by year (only if year present in key)
-        if key =~ /\b\d{4}\b/
-          year = key[/\d{4}/]
-          @totals_by_year[year] += numeric_value
-        end
-      end
-    end
-    # Handle Avg1
-    if params[:avg1_filter_applied] == "true"
-      if params[:avg1_selected_dates].present?
-        keys = params[:avg1_selected_dates]
-        totals_hash = @totals_by_column.to_h
-        matching_values = keys.map { |key| totals_hash[key] }
-        @average1 = matching_values.sum / matching_values.size
-      else
-        @average1 = nil # user unchecked all -> no line
-      end
-    else
-      if @totals_by_column.present?
-        first_three_values = @totals_by_column.values.first(3)
-        @average1 = first_three_values.sum / first_three_values.size
-      end
-    end
-
-    # Handle Avg2
-    if params[:avg2_filter_applied] == "true"
-      if params[:avg2_selected_dates].present?
-        keys = params[:avg2_selected_dates]
-        totals_hash = @totals_by_column.to_h
-        matching_values = keys.map { |key| totals_hash[key] }
-        @average2 = matching_values.sum / matching_values.size
-      else
-        @average2 = nil # user unchecked all -> no line
-      end
-    else
-      if @totals_by_column.present?
-        first_six_values = @totals_by_column.values.first(6)
-        @average2 = first_six_values.sum / first_six_values.size
-      end
-    end
-
-    @totals_by_year
-    @totals_backup_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-    clean_forecast_row_backups = clean_forecastrow_backups(forecast_row_backups)
-    clean_forecast_row_backups.each do |forecast|
-      forecast[:data].each do |key, value|
-        numeric_value = value.to_f
-        # Sum by column
-        @totals_backup_by_column[key] += numeric_value
-      end
-    end
-
-
-    @actual_columns = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-    clean_actuals = clean_actual_columns(actuals)
-    clean_actuals.each do |forecast|
-      forecast[:data].each do |key, value|
-        numeric_value = value.to_f
-        # Sum by column
-        @actual_columns[key] += numeric_value
-      end
-    end
-
-    table_difference
   end
 
   def create
@@ -172,6 +328,37 @@ class ForecastRowsController < BaseController
     end
 
     @all_keys.sort!
+  end
+
+  def single_row_difference(forecast_id)
+    @forecast_row = ForecastRow.includes(:forecast_row_backup).find(forecast_id)
+    @comparison_data = []
+    @all_keys = []
+
+    backup = @forecast_row.forecast_row_backup
+    if backup
+      current_data = @forecast_row.data
+      backup_data = backup.data
+
+      keys = (current_data.keys + backup_data.keys).uniq.sort
+      @all_keys = keys
+
+      differences = keys.map do |key|
+        original = backup_data[key]
+        updated = current_data[key]
+
+        if is_numeric?(original) && is_numeric?(updated)
+          (updated.to_f - original.to_f).round(2)
+        else
+          original.to_s == updated.to_s ? 0 : 'changed'
+        end
+      end
+
+      @comparison_data << {
+        row_id: @forecast_row.id,
+        values: differences
+      }
+    end
   end
 
   private
