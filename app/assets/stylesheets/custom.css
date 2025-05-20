@@ -14,11 +14,6 @@ br {
   margin-bottom: 10px;
 }
 
-.controls label {
-  margin-right: 10px;
-  font-size: 10px;
-}
-
 .controls input[type="radio"] {
   margin-right: 5px;
 }
@@ -520,4 +515,49 @@ h1 {
 
 .menu-bg{
   background-color: #F7F6FE;
+}
+.custom-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  display: inline-block;
+}
+.totals-container {
+  display: flex;
+  marging-left: -15px;
+  justify-content: space-between;
+  padding: 10px 50px;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #ddd;
+}
+.total {
+  font-size: 14px;
+  font-weight: bold;
+}
+.highlight-green {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 5px;
+  border-radius: 5px;
+}
+.highlight-gray {
+  background-color: #f4f4f4;
+  border: 1px solid #c3e6cb;
+  padding: 5px;
+  border-radius: 5px;
+}
+.loading-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: none;
+  text-align: center;
 }
