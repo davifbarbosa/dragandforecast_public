@@ -20,7 +20,7 @@
             diff = row[:values][original_index]
           %>
           <td style="color:
-            <%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'orange' %>;">
+            <%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'black' %>;">
             <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
           </td>
         <% end %>
