@@ -561,3 +561,6 @@ h1 {
   display: none;
   text-align: center;
 }
+.hero1 {
+  padding-top: 100px!important;
+}

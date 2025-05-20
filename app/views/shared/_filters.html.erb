@@ -90,7 +90,6 @@
     <div class="d-inline-flex align-items-center gap-2">
       <%= hidden_field_tag :level, params[:level] || 'product', id: 'level-hidden' %>
       <div id="filters_type">
-        <%# debugger %>
         <% if params[:product].present?  %>
           <%= select_tag :product, options_for_select(@product_names, params[:product]), id: "filter-select" %>
         <% end %>
