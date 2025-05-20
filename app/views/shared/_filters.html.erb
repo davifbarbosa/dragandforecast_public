@@ -88,6 +88,8 @@
             <%= render partial: "forecast_rows/subcategory_select" %>
           <% elsif params[:category].present?%>
             <%= render partial: "forecast_rows/category_select" %>
+          <% else %>
+            <%= render partial: "forecast_rows/product_select" %>
           <% end %>
         </div>
       </div>

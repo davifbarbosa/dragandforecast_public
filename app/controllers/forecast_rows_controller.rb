@@ -13,12 +13,18 @@ class ForecastRowsController < BaseController
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
       @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_filter_years = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
-          # Sum by column
+          # Sum by column filter
           @totals_by_column[key] += numeric_value
+          # Sum by year filter
+          if key =~ /\b\d{4}\b/
+            year = key[/\d{4}/]
+            @totals_filter_years[year] += numeric_value
+          end
         end
       end
       forecast_id = forecast_rows.last.id
@@ -63,12 +69,18 @@ class ForecastRowsController < BaseController
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
       @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
           # Sum by column
           @totals_by_column[key] += numeric_value
+          # Sum by year filter
+          if key =~ /\b\d{4}\b/
+            year = key[/\d{4}/]
+            @totals_filter_years[year] += numeric_value
+          end
         end
       end
       forecast_id = forecast_rows.last.id
@@ -114,12 +126,18 @@ class ForecastRowsController < BaseController
       @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
       @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
           # Sum by column
           @totals_by_column[key] += numeric_value
+          # Sum by year filter
+          if key =~ /\b\d{4}\b/
+            year = key[/\d{4}/]
+            @totals_filter_years[year] += numeric_value
+          end
         end
       end
       forecast_id = forecast_rows.last.id
@@ -164,12 +182,18 @@ class ForecastRowsController < BaseController
       @forecast_rows_header = @forecast_rows_backup_header
 
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows1)
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
           # Sum by column
           @totals_by_column[key] += numeric_value
+          # Sum by year filter
+          if key =~ /\b\d{4}\b/
+            year = key[/\d{4}/]
+            @totals_filter_years[year] += numeric_value
+          end
         end
       end
 

@@ -1,8 +1,8 @@
-<div class="totals-container">
+<div class="totals-container mt-3">
   <% @totals_by_year.each_with_index do |total, index| %>
     <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br> <span><%=total[1] %></span></div>
   <% end %>
-  <div class="total highlight-gray" id="total-2024">FILTERED 2024:<br> <span>0</span></div>
-  <div class="total highlight-green" id="total-2025">FILTERED 2025:<br> <span>0</span></div>
-  <div class="total highlight-gray" id="total-2026">FILTERED 2026:<br> <span>0</span></div>
+  <% @totals_filter_years.each_with_index do |total, index| %>
+    <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br> <span><%=total[1] %></span></div>
+  <% end %>
 </div>
