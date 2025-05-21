@@ -10,7 +10,15 @@
     </div>
     <div class="scrollable-content">
       <%= render partial: 'shared/chart' %>
-      <%#= render partial: 'shared/modify_table' %>
+
+      <turbo-frame id="modify_table" src="<%= table_modify_forecast_rows_path(data: @filter_key) %>">
+        <div class="text-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only"></span>
+          </div>
+          Loading Data...
+        </div>
+      </turbo-frame>
 
       <turbo-frame id="backup_table" src="<%= table_backup_forecast_rows_path(data: @filter_key) %>">
         <div class="text-center p-4">

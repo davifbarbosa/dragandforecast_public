@@ -1,5 +1,32 @@
 class ForecastRowsController < BaseController
   before_action :check_uploaded_file, only: %i[ create ]
+  def table_modify
+    # debugger
+    forecast_rows1 = current_user.forecast_rows
+    if params[:data].present? && params[:data][:product].present?
+      forest_id = params[:data][:product]
+      forecast_rows = forecast_rows1.where(id: forest_id)
+      @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
+      @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
+    elsif params[:data].present? && params[:data][:subcategory].present?
+      subcategory_name = params[:data][:subcategory]
+      forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", subcategory_name)
+      @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
+      @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
+    elsif params[:data].present? && params[:data][:category].present?
+      category_name = params[:data][:category]
+      forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", category_name)
+      @forecast_rows = clean_forecastrow(forecast_rows)
+      @modify_table_forecast_rows =  forecast_rows
+      @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
+    else
+      @modify_table_forecast_rows = clean_forecastrow(forecast_rows1)
+      @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
+    end
+    render partial: "forecast_rows/modify_table_frame"
+  end
   def index
     #common
     forecast_rows1 = current_user.forecast_rows
@@ -291,7 +318,7 @@ class ForecastRowsController < BaseController
   def table_backup
     if params[:data].present? && params[:data][:product].present?
       forest_id = params[:data][:product]
-      forecastRow = ForecastRow.find(forest_id)
+      forecastRow = current_user.forecast_rows.find(forest_id)
       @forecast_rows_backup = forecastRow.forecast_row_backup
       @forecast_rows_backup_header = @forecast_rows_backup.data.keys
       @forecast_rows_backup = [@forecast_rows_backup] unless @forecast_rows_backup.is_a?(Enumerable)

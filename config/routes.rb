@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     collection do
       get :table_difference
       get :table_backup
+      get :table_modify
       delete :destroy_all
     end
   end
