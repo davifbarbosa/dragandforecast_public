@@ -9,8 +9,7 @@
   </div>
 
   <div class="row">
-    <!-- Users List -->
-    <div class="col-md-6">
+    <div class="col-md-12">
       <div class="mb-3">
         <input type="text" class="form-control" placeholder="Search..." />
       </div>
@@ -18,6 +17,7 @@
         <table class="table">
           <thead>
           <tr>
+            <th>Name</th>
             <th>Email</th>
             <th>Role</th>
             <th>Plan</th>
@@ -27,45 +27,17 @@
           <tbody>
           <% @users.each do |user| %>
             <tr>
+              <td><%= user.full_name %></td>
               <td><%= user.email %></td>
               <td><%= user.role %></td>
               <td><%= user.subscription_plan&.name %></td>
               <td>
-                <%= link_to 'Edit', edit_admin_user_path(user) %>
-                <%= link_to 'Delete', admin_user_path(user), method: :delete, data: { confirm: 'Are you sure?' } %>
+                <%= link_to 'Edit', edit_admin_user_path(user), class: 'btn btn-sm btn-primary' %>
               </td>
             </tr>
           <% end %>
           </tbody>
         </table>
-      </div>
-    </div>
-
-    <!-- Role Assignment -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Role Assignment</h5>
-          <div class="mb-3">
-            <label class="form-label">User</label>
-            <select class="form-select">
-              <option selected disabled>Choose user</option>
-              <option>John Doe</option>
-              <option>Jane Smith</option>
-              <option>Michael Brown</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Role</label>
-            <select class="form-select">
-              <option selected>Admin</option>
-              <option>Editor</option>
-              <option>Viewer</option>
-              <option>Active</option>
-            </select>
-          </div>
-          <button class="btn btn-primary w-100">Update</button>
-        </div>
       </div>
     </div>
   </div>
