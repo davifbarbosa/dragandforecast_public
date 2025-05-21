@@ -1,5 +1,6 @@
 class ForecastRowsController < BaseController
-  before_action :check_uploaded_file, only: %i[ create ]
+  before_action :check_uploaded_file, only: %i[ create]
+  before_action :db_exist?, only: %i[ create]
   def table_modify
     # debugger
     forecast_rows1 = current_user.forecast_rows
@@ -313,11 +314,6 @@ class ForecastRowsController < BaseController
     render partial: "forecast_rows/backup_table_frame"
   end
   def create
-    forecast_rows = current_user.forecast_rows
-    if forecast_rows.present?
-      redirect_to forecast_rows_path, alert: 'Please clear Forecast Database first.'
-      return
-    end
     if params[:file]
       CsvImportService.import(params[:file], current_user, params[:decimal_format])
       redirect_to forecast_rows_path, notice: 'Forecast file successfully uploaded.'
@@ -518,6 +514,14 @@ class ForecastRowsController < BaseController
   end
 
   private
+
+  def db_exist?
+    forecast_rows = current_user.forecast_rows
+    if forecast_rows.present?
+      redirect_to forecast_rows_path, alert: 'Please clear Forecast Database first.'
+      return
+    end
+  end
   def check_uploaded_file
     uploaded_file = params[:file]
 

@@ -1,5 +1,6 @@
 class ActualsController < BaseController
   before_action :check_uploaded_file, only: %i[ create ]
+  before_action :db_exist?, only: %i[ create ]
   def index
 
   end
@@ -26,6 +27,13 @@ class ActualsController < BaseController
 
   private
 
+  def db_exist?
+    actual_rows = current_user.actuals
+    if actual_rows.present?
+      redirect_to forecast_rows_path, alert: 'Please clear Actual Database first.'
+      return
+    end
+  end
   def check_uploaded_file
     uploaded_file = params[:file]
 

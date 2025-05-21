@@ -6,6 +6,7 @@ class Admin::UsersController < BaseController
   end
 
   def edit
+    @subscription_plans = SubscriptionPlan.all
     @user = User.find(params[:id])
   end
 
@@ -14,6 +15,7 @@ class Admin::UsersController < BaseController
     if @user.update(user_params)
       redirect_to admin_users_path, notice: 'User updated.'
     else
+      @subscription_plans = SubscriptionPlan.all
       render :edit
     end
   end
@@ -25,8 +27,11 @@ class Admin::UsersController < BaseController
 
   private
 
-
   def user_params
-    params.require(:user).permit(:email, :role, :subscription_plan_id)
+    permitted = [:first_name, :last_name, :email, :subscription_plan_id]
+    if params[:user][:password].present?
+      permitted += [:password, :password_confirmation]
+    end
+    params.require(:user).permit(permitted)
   end
 end

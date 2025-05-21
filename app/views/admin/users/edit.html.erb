@@ -1,2 +1,70 @@
-<h1>Admin::Users#edit</h1>
-<p>Find me in app/views/admin/users/edit.html.erb</p>
+<div class="col-md-10 main-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>Access Control</h3>
+    <div class="dropdown">
+      <button class="btn btn-light rounded-circle">
+        <i class="bi bi-person-circle fs-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Users List -->
+    <div class="col-md-6">
+      <div class="card shadow p-4" style="min-width: 320px; max-width: 600px; width: 100%;">
+        <h3 class="text-center mb-4">Edit User</h3>
+
+        <%= form_with model: [:admin, @user], local: true do |f| %>
+          <% if @user.errors.any? %>
+            <div class="alert alert-danger">
+              <h5>Errors:</h5>
+              <ul>
+                <% @user.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <%= f.label :subscription_plan_id, "Subscription Plan", class: "form-label" %>
+              <%= f.collection_select :subscription_plan_id, @subscription_plans, :id, :name, { include_blank: "Select Plan" }, { class: "form-select" } %>
+            </div>
+            <div class="col-md-6 mb-3">
+              <%= f.label :first_name, class: "form-label" %>
+              <%= f.text_field :first_name, class: "form-control", required: true %>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <%= f.label :last_name, class: "form-label" %>
+              <%= f.text_field :last_name, class: "form-control", required: true %>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", required: true %>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password, class: "form-label" %>
+            <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
+            <small class="text-muted">Leave blank if you don't want to change it.</small>
+          </div>
+
+          <div class="mb-3">
+            <%= f.label :password_confirmation, class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password" %>
+          </div>
+
+          <%= f.submit "Update", class: "btn btn-primary w-100" %>
+        <% end %>
+
+        <div class="mt-3 text-center">
+          <%= link_to "Back", admin_users_path, class: "small text-decoration-none" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
