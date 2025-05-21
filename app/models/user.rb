@@ -12,6 +12,10 @@ class User < ApplicationRecord
   enum role: { user: 0, admin: 1 }
   after_create :assign_default_plan
 
+  def full_name
+    "#{first_name} #{last_name}".strip.titleize
+  end
+
   private
 
   def assign_default_plan

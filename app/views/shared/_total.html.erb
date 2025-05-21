@@ -1,8 +1,10 @@
 <div class="totals-container mt-3">
   <% @totals_by_year.each_with_index do |total, index| %>
-    <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br> <span><%=total[1] %></span></div>
+    <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br>
+      <span><%= number_with_delimiter(total[1]&.to_i) %></span></div>
   <% end %>
   <% @totals_filter_years.each_with_index do |total, index| %>
-    <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br> <span><%=total[1] %></span></div>
+    <div class="total highlight-<%=index.even? ? 'gray' : 'green' %>" id="total-motors-<%=total[0] %>">TOTALS <%=total[0] %>:<br>
+      <span><%= number_with_delimiter(total[1]&.to_i) %></span></div>
   <% end %>
 </div>
