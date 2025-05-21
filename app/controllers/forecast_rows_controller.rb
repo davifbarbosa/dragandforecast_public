@@ -404,7 +404,7 @@ class ForecastRowsController < BaseController
       end
     elsif params[:data].present? && params[:data][:category].present?
       category_name = params[:data][:category]
-      @forecast_rows = ForecastRow.includes(:forecast_row_backup).where("data ->> 'Category' = ?", category_name)
+      @forecast_rows = current_user.forecast_rows.includes(:forecast_row_backup).where("data ->> 'Category' = ?", category_name)
       @comparison_data = []
       @all_keys = []
       priority_cols = ["Product", "Category", "Sub-Category"]
@@ -440,7 +440,7 @@ class ForecastRowsController < BaseController
         }
       end
     else
-      @forecast_rows = ForecastRow.includes(:forecast_row_backup)
+      @forecast_rows = current_user.forecast_rows.includes(:forecast_row_backup)
       @comparison_data = []
       @all_keys = []
       priority_cols = ["Product", "Category", "Sub-Category"]
