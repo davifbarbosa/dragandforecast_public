@@ -142,7 +142,7 @@ class ForecastRowsController < BaseController
     elsif params[:category].present? && params[:category] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
       category_name = params[:category]
-      @filter_key = { subcategory: category_name }
+      @filter_key = { category: category_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
