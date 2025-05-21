@@ -86,12 +86,12 @@ class ForecastRowsController < BaseController
       end
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", params[:subcategory])
-      @forecast_rows = forecast_rows
       subcategory_name = params[:subcategory]
       @filter_key = { subcategory: subcategory_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
+      @forecast_rows = clean_forecast_rows
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
@@ -141,12 +141,12 @@ class ForecastRowsController < BaseController
 
     elsif params[:category].present? && params[:category] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
-      @forecast_rows = forecast_rows
       category_name = params[:category]
       @filter_key = { subcategory: category_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
+      @forecast_rows = clean_forecast_rows
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
@@ -192,10 +192,10 @@ class ForecastRowsController < BaseController
         end
       end
     else
-      @forecast_rows = forecast_rows1
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows1)
+      @forecast_rows = clean_forecast_rows
       clean_forecast_rows.each do |forecast|
         forecast[:data].each do |key, value|
           numeric_value = value.to_f
