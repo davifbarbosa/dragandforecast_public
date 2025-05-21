@@ -1,48 +1,72 @@
 require 'csv'
 
 class CsvImportService
-  def self.import(file, user)
+  def self.import(file, user, decimal_format = ".")
     rows = []
 
     CSV.foreach(file.path, headers: true) do |row|
-      rows << ForecastRow.new(user: user, data: row.to_h)
+      normalized_data = normalize_row(row.to_h, decimal_format)
+      rows << ForecastRow.new(user: user, data: normalized_data)
     end
 
-    # Bulk insert forecast rows
     ForecastRow.import(rows)
 
-    # Fetch inserted records in correct order (assuming no other inserts happened between)
     inserted_rows = ForecastRow.where(user: user).order(created_at: :asc).limit(rows.size)
-
-    # Check: make sure we got the right number of inserted rows
     return if inserted_rows.size != rows.size
 
-    # Build ForecastRowBackup records
     backups = inserted_rows.map do |forecast_row|
-      ForecastRowBackup.new(user: user,
+      ForecastRowBackup.new(
+        user: user,
         forecast_row_id: forecast_row.id,
         data: forecast_row.data
       )
     end
 
-    # Import backups
     result = ForecastRowBackup.import(backups)
-    # Check for failed inserts
     if result.failed_instances.any?
       puts "Backup insert failed for:"
-      result.failed_instances.each do |fail|
-        puts fail.errors.full_messages
-      end
+      result.failed_instances.each { |fail| puts fail.errors.full_messages }
     end
   end
 
-  def self.actuals_import(file, user)
+  def self.actuals_import(file, user, decimal_format = ".")
     rows = []
     CSV.foreach(file.path, headers: true) do |row|
-      rows << Actual.new(user: user, data: row.to_h)
+      normalized_data = normalize_row(row.to_h, decimal_format)
+      rows << Actual.new(user: user, data: normalized_data)
     end
-    Actual.import(rows) # bulk insert
+
+    Actual.import(rows)
   end
+
+  private
+
+  def self.normalize_row(row_data, decimal_format)
+    row_data.transform_values do |value|
+      normalize_decimal_value(value, decimal_format)
+    end
+  end
+
+  def self.normalize_decimal_value(value, decimal_format)
+    return value if value.blank?
+
+    # Only normalize if it's a number-like string
+    if value =~ /\A[\d.,]+\z/
+      case decimal_format
+      when "comma"
+        # Remove thousand separators (dots) and convert comma to dot
+        value.gsub(".", "").gsub(",", ".")
+      when "dot"
+        # Remove thousand separators (commas)
+        value.gsub(",", "")
+      else
+        value
+      end
+    else
+      value # Return original if not a number
+    end
+  end
+
 
 
 end

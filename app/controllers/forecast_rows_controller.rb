@@ -290,7 +290,7 @@ class ForecastRowsController < BaseController
       return
     end
     if params[:file]
-      CsvImportService.import(params[:file], current_user)
+      CsvImportService.import(params[:file], current_user, params[:decimal_format])
       redirect_to forecast_rows_path, notice: 'Forecast file successfully uploaded.'
     else
       redirect_to forecast_rows_path, alert: 'Please upload a CSV file.'

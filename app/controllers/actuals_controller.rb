@@ -6,7 +6,7 @@ class ActualsController < BaseController
 
   def create
     if params[:file]
-      CsvImportService.actuals_import(params[:file], current_user)
+      CsvImportService.actuals_import(params[:file], current_user, params[:decimal_format])
       redirect_to forecast_rows_path, notice: 'Actuals file successfully uploaded.'
     else
       redirect_to forecast_rows_path, alert: 'Please upload a CSV file.'

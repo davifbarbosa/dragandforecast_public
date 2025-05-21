@@ -23,16 +23,38 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
-
+    // Update apply button
     function applyUpdates() {
         document.getElementById("filter-form").submit();
     }
+    //Decimal format check boxes
+    document.addEventListener("DOMContentLoaded", function() {
+        const radios = document.querySelectorAll("input[name='number-format']");
+        const decimalFields = document.querySelectorAll("input.decimal_format");
 
+        function updateDecimalFields(value) {
+            const decimalChar = value === "comma" ? "comma" : "dot";
+            decimalFields.forEach(field => field.value = decimalChar);
+        }
 
+        // Initial setup
+        const selected = document.querySelector("input[name='number-format']:checked");
+        if (selected) {
+            updateDecimalFields(selected.value);
+        }
+
+        // Listen for changes on radio buttons
+        radios.forEach(radio => {
+            radio.addEventListener("change", function() {
+                updateDecimalFields(this.value);
+            });
+        });
+    });
+
+    // On change partial load like products, categories and sub-categories list
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".level-radio").forEach(radio => {
             radio.addEventListener("change", function () {
-                console.log('here');
                 const url = this.dataset.url;
 
                 fetch(url)
@@ -44,6 +66,7 @@
         });
     });
 
+    //Average 1 a& average 2 filters apply
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".auto-submit-checkbox").forEach(function (checkbox) {
             checkbox.addEventListener("change", function () {

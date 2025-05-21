@@ -1,17 +1,19 @@
 <div class="buttons">
   <div class="number-format">
-    <label><input type="radio" name="number-format" value="us" checked> Decimals Format (.)</label>
-    <label><input type="radio" name="number-format" value="eu"> Decimals Format (,)</label>
+    <label><input type="radio" name="number-format" value="dot" checked> Decimals Format (.)</label>
+    <label><input type="radio" name="number-format" value="comma"> Decimals Format (,)</label>
   </div>
   <br>
   <div style="display: inline-flex; align-items: center; gap: 10px;">
     <%= form_with url: forecast_rows_path, local: true, html: { multipart: true, id: 'import-form', style: 'display: inline-block;' } do |form| %>
+      <%= hidden_field_tag :decimal_format, 'dot', class: 'decimal_format', id: 'forecast_decimal_format' %>
       <label for="upload-template" class="custom-button">Upload Template</label>
       <%= form.file_field :file, id: 'upload-template', accept: '.csv', class: 'd-none' %>
       <%= form.submit "Import template", class: 'd-none' %>
     <% end %>
 
     <%= form_with url: actuals_path, local: true, html: { multipart: true, id: 'actuals-import-form', style: 'display: inline-block;' } do |form| %>
+      <%= hidden_field_tag :decimal_format, 'dot', class: 'decimal_format', id: 'actuals_decimal_format' %>
       <label for="upload-actuals" class="custom-button">Upload de Actuals</label>
       <%= form.file_field :file, id: 'upload-actuals', accept: '.csv', class: 'd-none' %>
       <%= form.submit "Import actuals CSV", class: 'd-none' %>
