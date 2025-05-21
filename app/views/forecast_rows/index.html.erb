@@ -3,13 +3,13 @@
     <%= render partial: 'shared/upgrade_plan_msg' %>
     <!-- Elementos fixos -->
     <div class="fixed-elements">
-      <%= render partial: 'shared/form_buttons' %>
-      <%= render partial: 'shared/filters' %>
-      <%= render partial: 'shared/color_filters' %>
-      <%= render partial: 'shared/total' %>
+      <%= render partial: 'form_buttons' %>
+      <%= render partial: 'filters' %>
+      <%= render partial: 'color_filters' %>
+      <%= render partial: 'total' %>
     </div>
     <div class="scrollable-content">
-      <%= render partial: 'shared/chart' %>
+      <%= render partial: 'chart' %>
 
       <turbo-frame id="modify_table" src="<%= table_modify_forecast_rows_path(data: @filter_key) %>">
         <div class="text-center p-4">
@@ -47,151 +47,110 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
-    document.addEventListener('turbo:load', () => {
-        // Update apply button
-        function applyUpdates() {
-            document.getElementById("filter-form").submit();
+    function applyUpdates() {
+        const form = document.getElementById("filter-form");
+        if (form) form.submit();
+    }
+    document.addEventListener("turbo:load", function () {
+        console.log("Turbo page loaded");
+        // --- Apply Button Submission ---
+        // applyUpdates();
+        // --- Decimal format checkboxes ---
+        const radiosDecimal = document.querySelectorAll("input[name='number-format']");
+        const decimalFields = document.querySelectorAll("input.decimal_format");
+
+        function updateDecimalFields(value) {
+            const decimalChar = value === "comma" ? "comma" : "dot";
+            decimalFields.forEach(field => field.value = decimalChar);
         }
-        //Decimal format check boxes
-        document.addEventListener("DOMContentLoaded", function() {
-            const radios = document.querySelectorAll("input[name='number-format']");
-            const decimalFields = document.querySelectorAll("input.decimal_format");
 
-            function updateDecimalFields(value) {
-                const decimalChar = value === "comma" ? "comma" : "dot";
-                decimalFields.forEach(field => field.value = decimalChar);
-            }
+        const selectedDecimal = document.querySelector("input[name='number-format']:checked");
+        if (selectedDecimal) updateDecimalFields(selectedDecimal.value);
 
-            // Initial setup
-            const selected = document.querySelector("input[name='number-format']:checked");
-            if (selected) {
-                updateDecimalFields(selected.value);
-            }
-
-            // Listen for changes on radio buttons
-            radios.forEach(radio => {
-                radio.addEventListener("change", function() {
-                    updateDecimalFields(this.value);
-                });
+        radiosDecimal.forEach(radio => {
+            radio.addEventListener("change", function () {
+                updateDecimalFields(this.value);
             });
         });
 
-        // On change partial load like products, categories and sub-categories list
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".level-radio").forEach(radio => {
-                radio.addEventListener("change", function () {
-                    const url = this.dataset.url;
+        // --- Load filters when radio is changed ---
+        document.querySelectorAll(".level-radio").forEach(radio => {
+            radio.addEventListener("change", function () {
+                const url = this.dataset.url;
+                if (!url) return;
 
-                    fetch(url)
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById("select-container").innerHTML = html;
-                      });
-                });
+                fetch(url)
+                  .then(response => response.text())
+                  .then(html => {
+                      document.getElementById("select-container").innerHTML = html;
+                  });
             });
         });
 
-        //Average 1 a& average 2 filters apply
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll(".auto-submit-checkbox").forEach(function (checkbox) {
-                checkbox.addEventListener("change", function () {
-                    document.getElementById("filter-form").submit();
-                });
+        // --- Auto-submit on checkbox change ---
+        document.querySelectorAll(".auto-submit-checkbox").forEach(checkbox => {
+            checkbox.addEventListener("change", function () {
+                document.getElementById("filter-form").submit();
             });
         });
+
+        // --- Custom Dropdown Toggle ---
         function toggleDropdown(dropdownId) {
             const dropdown = document.getElementById(dropdownId);
-            dropdown.style.display = (dropdown.style.display === "block") ? "none" : "block";
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
         }
+
         window.addEventListener("click", function (event) {
             if (!event.target.closest(".custom-dropdown")) {
-                document.getElementById("dropdown-content-3m").style.display = "none";
-                document.getElementById("dropdown-content-6m").style.display = "none";
+                const dropdown3m = document.getElementById("dropdown-content-3m");
+                const dropdown6m = document.getElementById("dropdown-content-6m");
+                if (dropdown3m) dropdown3m.style.display = "none";
+                if (dropdown6m) dropdown6m.style.display = "none";
             }
         });
 
-        // Adiciona eventos de clique aos botões do dropdown
-        document.getElementById("dropdown-btn-3m").addEventListener("click", function (event) {
-            event.stopPropagation(); // Impede que o clique feche o dropdown imediatamente
-            toggleDropdown("dropdown-content-3m");
-        });
+        const btn3m = document.getElementById("dropdown-btn-3m");
+        const btn6m = document.getElementById("dropdown-btn-6m");
 
-        document.getElementById("dropdown-btn-6m").addEventListener("click", function (event) {
-            event.stopPropagation();
-            toggleDropdown("dropdown-content-6m");
-        });
-        function searchFilterOptions() {
-            const input = document.getElementById("filter-search");
-            const filter = input.value.toLowerCase();
-            const select = document.getElementById("filter-select");
-
-            if (!select) return;
-
-            // Show/hide options
-            for (let i = 0; i < select.options.length; i++) {
-                const option = select.options[i];
-                const text = option.text.toLowerCase();
-
-                if (text.includes(filter)) {
-                    option.style.display = "";
-                } else {
-                    option.style.display = "none";
-                }
-            }
-        }
-        document.addEventListener('DOMContentLoaded', function () {
-            const radios = document.querySelectorAll('.level-radio');
-            const filtersContainer = document.getElementById('filters_type');
-
-            radios.forEach(radio => {
-                radio.addEventListener('change', function () {
-                    let sourceId = '';
-                    switch (this.value) {
-                        case 'product':
-                            sourceId = 'type_products';
-                            break;
-                        case 'subcategory':
-                            sourceId = 'type_subcategories';
-                            break;
-                        case 'category':
-                            sourceId = 'type_categories';
-                            break;
-                    }
-
-                    const sourceDiv = document.getElementById(sourceId);
-                    if (sourceDiv) {
-                        filtersContainer.innerHTML = sourceDiv.innerHTML;
-                    }
-                });
+        if (btn3m) {
+            btn3m.addEventListener("click", function (e) {
+                e.stopPropagation();
+                toggleDropdown("dropdown-content-3m");
             });
-        });
-        function navigateFilter(direction) {
-            const filtersContainer = document.getElementById('filters_type');
-            const select = filtersContainer.querySelector('select'); // Finds current active select
-
-            if (!select) return;
-
-            const options = select.options;
-            let selectedIndex = select.selectedIndex;
-
-            if (direction === 'next' && selectedIndex < options.length - 1) {
-                select.selectedIndex = selectedIndex + 1;
-            } else if (direction === 'previous' && selectedIndex > 0) {
-                select.selectedIndex = selectedIndex - 1;
-            }
-
-            document.getElementById('filter-form').submit();
         }
-        document.addEventListener('DOMContentLoaded', function () {
-            const radios = document.querySelectorAll('.level-radio');
-            const filtersContainer = document.getElementById('filters_type');
-            const levelHidden = document.getElementById('level-hidden');
 
-            function updateSelectFromRadio(value) {
+        if (btn6m) {
+            btn6m.addEventListener("click", function (e) {
+                e.stopPropagation();
+                toggleDropdown("dropdown-content-6m");
+            });
+        }
+
+        // --- Search filter dropdown ---
+        const filterSearchInput = document.getElementById("filter-search");
+        if (filterSearchInput) {
+            filterSearchInput.addEventListener("input", function () {
+                const filter = this.value.toLowerCase();
+                const select = document.getElementById("filter-select");
+                if (!select) return;
+
+                for (let i = 0; i < select.options.length; i++) {
+                    const option = select.options[i];
+                    option.style.display = option.text.toLowerCase().includes(filter) ? "" : "none";
+                }
+            });
+        }
+
+        // --- Dynamic filter type change ---
+        const filtersContainer = document.getElementById("filters_type");
+        const levelHidden = document.getElementById("level-hidden");
+
+        document.querySelectorAll('.level-radio').forEach(radio => {
+            radio.addEventListener('change', function () {
                 let sourceId = '';
-                let selectedValue = ''; // Will fetch from URL params
+                let selectedValue = '';
 
-                switch (value) {
+                switch (this.value) {
                     case 'product':
                         sourceId = 'type_products';
                         selectedValue = new URLSearchParams(window.location.search).get('product');
@@ -207,65 +166,72 @@
                 }
 
                 const sourceDiv = document.getElementById(sourceId);
-                if (sourceDiv) {
+                if (sourceDiv && filtersContainer) {
                     filtersContainer.innerHTML = sourceDiv.innerHTML;
 
                     const newSelect = filtersContainer.querySelector('select');
                     if (newSelect) {
                         newSelect.id = 'filter-select';
 
-                        // Restore selected option
                         if (selectedValue) {
                             Array.from(newSelect.options).forEach(option => {
-                                if (option.value === selectedValue) {
-                                    option.selected = true;
-                                }
+                                option.selected = option.value === selectedValue;
                             });
                         }
 
-                        // Submit on change
                         newSelect.addEventListener("change", function () {
                             this.form.submit();
                         });
                     }
                 }
 
-                // Set the hidden input value
-                if (levelHidden) levelHidden.value = value;
-            }
-
-            // Apply listeners on radio buttons
-            radios.forEach(radio => {
-                radio.addEventListener('change', function () {
-                    updateSelectFromRadio(this.value);
-                });
+                if (levelHidden) levelHidden.value = this.value;
             });
-
-            // On page load: find the checked radio and update
-            const checkedRadio = document.querySelector('.level-radio:checked');
-            if (checkedRadio) {
-                updateSelectFromRadio(checkedRadio.value);
-            }
         });
-        document.addEventListener("DOMContentLoaded", function () {
-            const fileInput = document.getElementById("upload-template");
 
-            fileInput.addEventListener("change", function () {
-                if (fileInput.files.length > 0) {
+        // --- Restore on page load ---
+        const checkedRadio = document.querySelector('.level-radio:checked');
+        if (checkedRadio) {
+            checkedRadio.dispatchEvent(new Event("change"));
+        }
+
+        // --- File Upload Auto-Submit ---
+        const fileInputTemplate = document.getElementById("upload-template");
+        const fileInputActuals = document.getElementById("upload-actuals");
+
+        if (fileInputTemplate) {
+            fileInputTemplate.addEventListener("change", function () {
+                if (this.files.length > 0) {
                     document.getElementById("import-form").submit();
                 }
             });
+        }
 
-            const actualfileInput = document.getElementById("upload-actuals");
-
-            actualfileInput.addEventListener("change", function () {
-                if (actualfileInput.files.length > 0) {
+        if (fileInputActuals) {
+            fileInputActuals.addEventListener("change", function () {
+                if (this.files.length > 0) {
                     document.getElementById("actuals-import-form").submit();
                 }
             });
+        }
+
+        // --- Navigation ---
+        window.navigateFilter = function (direction) {
+            const filtersContainer = document.getElementById('filters_type');
+            const select = filtersContainer.querySelector('select');
+            if (!select) return;
+
+            let selectedIndex = select.selectedIndex;
+            if (direction === 'next' && selectedIndex < select.options.length - 1) {
+                select.selectedIndex++;
+            } else if (direction === 'previous' && selectedIndex > 0) {
+                select.selectedIndex--;
+            }
+
+            select.form.submit();
+        };
 
 
-        });
         let actuals = [];
         let isDarkMode = false;
         let originalValue = null;
@@ -477,7 +443,7 @@
             },
             plugins: [ChartDataLabels]
         });
-    })
+    });
 </script>
 <div class="loading-popup" style="display: none;">
   <p>Processing data... Please wait.</p>
