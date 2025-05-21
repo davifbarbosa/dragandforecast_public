@@ -1,3 +1,5 @@
+<%= link_to 'Samples download', '/files/samples.zip', download: true %>
+
 <div class="buttons">
   <div class="number-format">
     <label><input type="radio" name="number-format" value="dot" checked> Decimals Format (.)</label>
@@ -20,7 +22,7 @@
     <% end %>
 
     <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
-    <button type="button" class="custom-button" onclick="applyUpdates()">Apply Updates</button>
+    <button type="button" class="custom-button" onclick="applyUpdates()">Apply Filters</button>
 
     <%= button_to 'Clear Forecast', destroy_all_forecast_rows_path,
                   local: false,
