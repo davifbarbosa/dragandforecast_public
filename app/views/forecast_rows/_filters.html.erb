@@ -66,13 +66,13 @@
                            end %>
 
         <!-- Radio Buttons -->
-        <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', data: { url: load_select_path(level: 'product') }, id: 'level_product' %>
+        <%= radio_button_tag 'level', 'product', default_level == 'product', class: 'level-radio', data: { url: load_select_path(level: 'product', product: params[:product]) }, id: 'level_product' %>
         <%= label_tag 'level_product', 'Product' %>
 
-        <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', data: { url: load_select_path(level: 'subcategory') }, id: 'level_subcategory' %>
+        <%= radio_button_tag 'level', 'subcategory', default_level == 'subcategory', class: 'level-radio', data: { url: load_select_path(level: 'subcategory', subcategory: params[:subcategory]) }, id: 'level_subcategory' %>
         <%= label_tag 'level_subcategory', 'Sub-Category' %>
 
-        <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', data: { url: load_select_path(level: 'category') }, id: 'level_category' %>
+        <%= radio_button_tag 'level', 'category', default_level == 'category', class: 'level-radio', data: { url: load_select_path(level: 'category', category: params[:category]) }, id: 'level_category' %>
         <%= label_tag 'level_category', 'Category' %>
 
       </div>
