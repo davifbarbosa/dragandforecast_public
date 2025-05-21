@@ -10,9 +10,16 @@
     </div>
     <div class="scrollable-content">
       <%= render partial: 'shared/chart' %>
-      <%= render partial: 'shared/modify_table' %>
-      <%= render partial: 'shared/backup_table' %>
-      <%= render partial: 'shared/difference_table' %>
+      <%#= render partial: 'shared/modify_table' %>
+      <%#= render partial: 'shared/backup_table' %>
+      <turbo-frame id="difference_table" src="<%= table_difference_forecast_rows_path(data: [@product_id]) %>">
+        <div class="text-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only"></span>
+          </div>
+          Loading Differences...
+        </div>
+      </turbo-frame>
     </div>
   </div>
 </section>

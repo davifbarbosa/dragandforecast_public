@@ -1,0 +1,81 @@
+<% priority = ["Category", "Product", "Sub-Category"] %>
+<% reordered_keys = priority + (all_keys - priority) %>
+
+<h3>Tabela de Diferenças</h3>
+<div id="scroll-area" style="height: 600px; overflow-y: auto;">
+  <div class="data-table-wrapper">
+    <table class="data-table">
+      <thead>
+      <tr>
+        <% reordered_keys.each do |key| %>
+          <th><%= key %></th>
+        <% end %>
+      </tr>
+      </thead>
+      <tbody id="content-area">
+      <!-- Clusterize will inject rows here -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+    document.addEventListener("turbo:frame-load", function (event) {
+        if (event.target.id === "difference_table") {
+            console.log("✅ Frame loaded. Size <%=comparison_data.size %>");
+
+            // Check if Clusterize is already available
+            if (typeof Clusterize === "undefined") {
+                console.log('🚨 Clusterize is undefined. Loading now...');
+
+                const script = document.createElement("script");
+                // script.src = "https://cdnjs.cloudflare.com/ajax/libs/clusterize.js/0.18.1/clusterize.min.js";
+                script.src = "https://cdn.jsdelivr.net/npm/clusterize.js@0.18.1/clusterize.min.js";
+
+                // Debug loading
+                script.onload = function () {
+                    console.log('✅ Clusterize script loaded!');
+                    initClusterize();
+                };
+
+                script.onerror = function () {
+                    console.error('❌ Failed to load Clusterize.js from CDN!');
+                };
+
+                document.body.appendChild(script);
+            } else {
+                console.log('✅ Clusterize already loaded');
+                initClusterize();
+            }
+
+            function initClusterize() {
+                console.log('🚀 Initializing Clusterize...');
+
+                const clusterizeRows = [
+                    <% comparison_data.each do |row| %>
+                    `<tr>
+          <% reordered_keys.each do |key| %>
+            <% original_index = all_keys.index(key) %>
+            <% diff = row[:values][original_index] %>
+            <td style="color:<%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'black' %>;">
+              <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
+            </td>
+          <% end %>
+        </tr>`,
+                    <% end %>
+                ];
+
+                console.log(`📦 Rows loaded: ${clusterizeRows.length}`);
+
+
+                new Clusterize({
+                    rows: clusterizeRows,
+                    scrollId: 'scroll-area',
+                    contentId: 'content-area',
+                    rows_in_block: 1200,
+                    blocks_in_cluster:120
+                });
+            }
+        }
+    });
+</script>

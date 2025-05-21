@@ -7,6 +7,7 @@ class ForecastRowsController < BaseController
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
+      @product_id = forecast_rows.last.id
       @forecast_rows = clean_forecastrow(forecast_rows)
       @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
@@ -253,7 +254,7 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-      table_difference
+      # table_difference
       @modify_table_forecast_rows = forecast_rows1
     end
 
@@ -333,45 +334,51 @@ class ForecastRowsController < BaseController
 
   # app/controllers/forecast_rows_controller.rb
   def table_difference
-    @forecast_rows = ForecastRow.includes(:forecast_row_backup)
+    if params[:data].present?
+      forecast_id = params[:data].last
+      single_row_difference(forecast_id)
+    else
+      @forecast_rows = ForecastRow.includes(:forecast_row_backup)
 
-    @comparison_data = []
+      @comparison_data = []
 
-    @all_keys = []
+      @all_keys = []
 
-    priority_cols = ["Product", "Category", "Sub-Category"]
+      priority_cols = ["Product", "Category", "Sub-Category"]
 
-    @forecast_rows.each do |row|
-      backup = row.forecast_row_backup
-      next unless backup
+      @forecast_rows.each do |row|
+        backup = row.forecast_row_backup
+        next unless backup
 
-      current_data = row.data
-      backup_data = backup.data
+        current_data = row.data
+        backup_data = backup.data
 
-      keys = (current_data.keys + backup_data.keys).uniq.sort
-      @all_keys |= keys
+        keys = (current_data.keys + backup_data.keys).uniq.sort
+        @all_keys |= keys
 
-      differences = keys.map do |key|
-        original = backup_data[key]
-        updated = current_data[key]
+        differences = keys.map do |key|
+          original = backup_data[key]
+          updated = current_data[key]
 
-        if priority_cols.include?(key)
-          # Show original text value for these columns
-          original.to_s
-        else
-          if is_numeric?(original) && is_numeric?(updated)
-            (updated.to_f - original.to_f).round(2)
+          if priority_cols.include?(key)
+            # Show original text value for these columns
+            original.to_s
           else
-            original.to_s == updated.to_s ? 0 : 'changed'
+            if is_numeric?(original) && is_numeric?(updated)
+              (updated.to_f - original.to_f).round(2)
+            else
+              original.to_s == updated.to_s ? 0 : 'changed'
+            end
           end
         end
-      end
 
-      @comparison_data << {
-        row_id: row.id,
-        values: differences
-      }
+        @comparison_data << {
+          row_id: row.id,
+          values: differences
+        }
+      end
     end
+    render partial: "forecast_rows/difference_table_frame"
   end
 
   def single_row_difference(forecast_id)

@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   resources :forecast_rows, only: [:index, :create, :update]
   resources :forecast_rows do
     collection do
+      get :table_difference
       delete :destroy_all
     end
   end
