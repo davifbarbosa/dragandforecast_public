@@ -367,7 +367,7 @@ class ForecastRowsController < BaseController
       single_row_difference(forecast_id)
     elsif params[:data].present? && params[:data][:subcategory].present?
       subcategory_name = params[:data][:subcategory]
-      @forecast_rows = ForecastRow.includes(:forecast_row_backup).where("data ->> 'Sub-Category' = ?", subcategory_name)
+      @forecast_rows = current_user.forecast_rows.includes(:forecast_row_backup).where("data ->> 'Sub-Category' = ?", subcategory_name)
       @comparison_data = []
       @all_keys = []
       priority_cols = ["Product", "Category", "Sub-Category"]
@@ -480,7 +480,7 @@ class ForecastRowsController < BaseController
   end
 
   def single_row_difference(forecast_id)
-    @forecast_row = ForecastRow.includes(:forecast_row_backup).find(forecast_id)
+    @forecast_row = current_user.forecast_rows.includes(:forecast_row_backup).find(forecast_id)
     @comparison_data = []
     @all_keys = []
 
@@ -589,7 +589,7 @@ class ForecastRowsController < BaseController
   end
 
   def first_three_months_average(count)
-    forecast_rows = ForecastRow.all.order(:id).first(count)
+    forecast_rows = current_user.forecast_rows.all.order(:id).first(count)
 
     sum_of_averages = forecast_rows.sum do |row|
       # Extract first 3 keys that look like a date (YYYY-MM)
@@ -604,7 +604,7 @@ class ForecastRowsController < BaseController
   end
 
   def six_months_average(count)
-    forecast_rows = ForecastRow.all.order(:id).first(count)
+    forecast_rows = current_user.forecast_rows.all.order(:id).first(count)
 
     sum_of_averages = forecast_rows.sum do |row|
       # Extract first 3 keys that look like a date (YYYY-MM)
