@@ -7,7 +7,8 @@ class ForecastRowsController < BaseController
     actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
-      @product_id = forecast_rows.last.id
+      product = forecast_rows.last.id
+      @filter_key = { product: product }
       @forecast_rows = clean_forecastrow(forecast_rows)
       @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
@@ -65,6 +66,8 @@ class ForecastRowsController < BaseController
       end
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", params[:subcategory])
+      subcategory_name = params[:subcategory]
+      @filter_key = { subcategory: subcategory_name }
       @forecast_rows = clean_forecastrow(forecast_rows)
       @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
@@ -123,6 +126,8 @@ class ForecastRowsController < BaseController
 
     elsif params[:category].present? && params[:category] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
+      category_name = params[:category]
+      @filter_key = { subcategory: category_name }
       @forecast_rows = clean_forecastrow(forecast_rows)
       @modify_table_forecast_rows =  forecast_rows
       #Single backup table data
@@ -283,7 +288,33 @@ class ForecastRowsController < BaseController
       @avg = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
     end
   end
+  def table_backup
+    if params[:data].present? && params[:data][:product].present?
+      forest_id = params[:data][:product]
+      forecastRow = ForecastRow.find(forest_id)
+      @forecast_rows_backup = forecastRow.forecast_row_backup
+      @forecast_rows_backup_header = @forecast_rows_backup.data.keys
+      @forecast_rows_backup = [@forecast_rows_backup] unless @forecast_rows_backup.is_a?(Enumerable)
+      @forecast_rows_header = @forecast_rows_backup_header
+    elsif params[:data].present? && params[:data][:subcategory].present?
+      subcategory_name = params[:data][:subcategory]
+      @forecast_rows_backup = current_user.forecast_row_backups.where("data ->> 'Sub-Category' = ?", subcategory_name)
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+    elsif params[:data].present? && params[:data][:category].present?
+      category_name = params[:data][:category]
+      @forecast_rows_backup = current_user.forecast_row_backups.where("data ->> 'Category' = ?", category_name)
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+    else
+      forecast_row_backups = current_user.forecast_row_backups
+      @forecast_rows_backup = forecast_row_backups.all.order(:id)
+      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
+      @forecast_rows_header = @forecast_rows_backup_header
+    end
 
+    render partial: "forecast_rows/backup_table_frame"
+  end
   def create
     forecast_rows = current_user.forecast_rows
     if forecast_rows.present?
@@ -334,18 +365,88 @@ class ForecastRowsController < BaseController
 
   # app/controllers/forecast_rows_controller.rb
   def table_difference
-    if params[:data].present?
-      forecast_id = params[:data].last
+    if params[:data].present? && params[:data][:product].present?
+      forecast_id = params.dig(:data, :product)
       single_row_difference(forecast_id)
+    elsif params[:data].present? && params[:data][:subcategory].present?
+      subcategory_name = params[:data][:subcategory]
+      @forecast_rows = ForecastRow.includes(:forecast_row_backup).where("data ->> 'Sub-Category' = ?", subcategory_name)
+      @comparison_data = []
+      @all_keys = []
+      priority_cols = ["Product", "Category", "Sub-Category"]
+      @forecast_rows.each do |row|
+        backup = row.forecast_row_backup
+        next unless backup
+
+        current_data = row.data
+        backup_data = backup.data
+
+        keys = (current_data.keys + backup_data.keys).uniq.sort
+        @all_keys |= keys
+
+        differences = keys.map do |key|
+          original = backup_data[key]
+          updated = current_data[key]
+
+          if priority_cols.include?(key)
+            # Show original text value for these columns
+            original.to_s
+          else
+            if is_numeric?(original) && is_numeric?(updated)
+              (updated.to_f - original.to_f).round(2)
+            else
+              original.to_s == updated.to_s ? 0 : 'changed'
+            end
+          end
+        end
+
+        @comparison_data << {
+          row_id: row.id,
+          values: differences
+        }
+      end
+    elsif params[:data].present? && params[:data][:category].present?
+      category_name = params[:data][:category]
+      @forecast_rows = ForecastRow.includes(:forecast_row_backup).where("data ->> 'Category' = ?", category_name)
+      @comparison_data = []
+      @all_keys = []
+      priority_cols = ["Product", "Category", "Sub-Category"]
+      @forecast_rows.each do |row|
+        backup = row.forecast_row_backup
+        next unless backup
+
+        current_data = row.data
+        backup_data = backup.data
+
+        keys = (current_data.keys + backup_data.keys).uniq.sort
+        @all_keys |= keys
+
+        differences = keys.map do |key|
+          original = backup_data[key]
+          updated = current_data[key]
+
+          if priority_cols.include?(key)
+            # Show original text value for these columns
+            original.to_s
+          else
+            if is_numeric?(original) && is_numeric?(updated)
+              (updated.to_f - original.to_f).round(2)
+            else
+              original.to_s == updated.to_s ? 0 : 'changed'
+            end
+          end
+        end
+
+        @comparison_data << {
+          row_id: row.id,
+          values: differences
+        }
+      end
     else
       @forecast_rows = ForecastRow.includes(:forecast_row_backup)
-
       @comparison_data = []
-
       @all_keys = []
-
       priority_cols = ["Product", "Category", "Sub-Category"]
-
       @forecast_rows.each do |row|
         backup = row.forecast_row_backup
         next unless backup

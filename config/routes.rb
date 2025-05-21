@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   resources :forecast_rows do
     collection do
       get :table_difference
+      get :table_backup
       delete :destroy_all
     end
   end
