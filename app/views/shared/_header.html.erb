@@ -17,6 +17,9 @@
         <% if user_signed_in? %>
           <li class="dropdown"><a href="#"><span><%=current_user.full_name %></span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
             <ul>
+              <% if current_user&.admin? %>
+                <li><%= link_to 'Admin Panel', admin_users_path %></li>
+              <% end %>
               <li><%= link_to 'My Profile', edit_user_registration_path %></li>
               <li><%= link_to 'Upgrade Plan', root_path(anchor: 'pricing') %></li>
             </ul>
