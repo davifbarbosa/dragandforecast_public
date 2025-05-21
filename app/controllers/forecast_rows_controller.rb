@@ -6,7 +6,6 @@ class ForecastRowsController < BaseController
     if params[:data].present? && params[:data][:product].present?
       forest_id = params[:data][:product]
       forecast_rows = forecast_rows1.where(id: forest_id)
-      @forecast_rows = clean_forecastrow(forecast_rows)
       @modify_table_forecast_rows =  forecast_rows
       @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
     elsif params[:data].present? && params[:data][:subcategory].present?
@@ -22,7 +21,7 @@ class ForecastRowsController < BaseController
       @modify_table_forecast_rows =  forecast_rows
       @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
     else
-      @modify_table_forecast_rows = clean_forecastrow(forecast_rows1)
+      @modify_table_forecast_rows = forecast_rows1
       @modify_forecast_rows_header = forecast_rows1.map(&:data).flat_map(&:keys).uniq
     end
     render partial: "forecast_rows/modify_table_frame"
@@ -37,11 +36,6 @@ class ForecastRowsController < BaseController
       product = forecast_rows.last.id
       @filter_key = { product: product }
       @forecast_rows = clean_forecastrow(forecast_rows)
-      @modify_table_forecast_rows =  forecast_rows
-      #Single backup table data
-      @forecast_rows_backup = forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
-      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
-      @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -58,7 +52,6 @@ class ForecastRowsController < BaseController
         end
       end
       forecast_id = forecast_rows.last.id
-      single_row_difference(forecast_id)
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
@@ -93,14 +86,9 @@ class ForecastRowsController < BaseController
       end
     elsif params[:subcategory].present? && params[:subcategory] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Sub-Category' = ?", params[:subcategory])
+      @forecast_rows = forecast_rows
       subcategory_name = params[:subcategory]
       @filter_key = { subcategory: subcategory_name }
-      @forecast_rows = clean_forecastrow(forecast_rows)
-      @modify_table_forecast_rows =  forecast_rows
-      #Single backup table data
-      @forecast_rows_backup = forecast_row_backups.where("data ->> 'Sub_Category' = ?", params[:subcategory])
-      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
-      @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -153,14 +141,9 @@ class ForecastRowsController < BaseController
 
     elsif params[:category].present? && params[:category] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Category' = ?", params[:category])
+      @forecast_rows = forecast_rows
       category_name = params[:category]
       @filter_key = { subcategory: category_name }
-      @forecast_rows = clean_forecastrow(forecast_rows)
-      @modify_table_forecast_rows =  forecast_rows
-      #Single backup table data
-      @forecast_rows_backup = forecast_row_backups.where("data ->> 'Category' = ?", params[:category])
-      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
-      @forecast_rows_header = @forecast_rows_backup_header
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -176,8 +159,6 @@ class ForecastRowsController < BaseController
           end
         end
       end
-      forecast_id = forecast_rows.last.id
-      single_row_difference(forecast_id)
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
@@ -211,12 +192,7 @@ class ForecastRowsController < BaseController
         end
       end
     else
-      @forecast_rows = clean_forecastrow(forecast_rows1)
-      @forecast_rows_backup = forecast_row_backups.all.order(:id)
-
-      @forecast_rows_backup_header = @forecast_rows_backup.map(&:data).flat_map(&:keys).uniq
-      @forecast_rows_header = @forecast_rows_backup_header
-
+      @forecast_rows = forecast_rows1
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows1)
@@ -266,7 +242,6 @@ class ForecastRowsController < BaseController
           @average2 = first_six_values.sum / first_six_values.size
         end
       end
-
       @totals_backup_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_row_backups = clean_forecastrow_backups(forecast_row_backups)
       clean_forecast_row_backups.each do |forecast|
@@ -286,11 +261,7 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-      # table_difference
-      @modify_table_forecast_rows = forecast_rows1
     end
-
-
     @totals_by_year = Hash.new(0) # default value 0
     clean_forecast_rows = clean_forecastrow(forecast_rows1)
     clean_forecast_rows.each do |forecast|
@@ -302,7 +273,6 @@ class ForecastRowsController < BaseController
         end
       end
     end
-
 
     #Common filters
     @product_names = ["Total"] + forecast_rows1.all.map { |row| row.data["Product"] }.uniq
