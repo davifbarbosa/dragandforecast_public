@@ -259,8 +259,14 @@
             if (i < split2) return 'blue';
             return 'red';
         });
+         <% min_data = @totals_by_column.values.min %>;
+         <% max_data = @totals_by_column.values.max %>;
+        const min_value = <%= (min_data / 1000).floor * 1000  %>;
+        console.log("Min value is: "+ min_value);
+        const max_value = <%= (max_data / 1000.0).ceil * 1000 %>;
+        console.log("Max value is: "+ max_value);
 
-       const forecastChart = new Chart(ctx, {
+        const forecastChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -432,6 +438,8 @@
                             color: isDarkMode ? "#ffffff" : "#000000"
                         },
                         beginAtZero: true,
+                        min: min_value,
+                        max: max_value,
                         ticks: {
                             callback: value => Math.round(value).toLocaleString(),
                             color: isDarkMode ? "#ffffff" : "#000000"
