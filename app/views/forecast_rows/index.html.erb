@@ -342,10 +342,27 @@
             ...Array(bluePeriods).fill('blue'),
             ...Array(redPeriods).fill('red')
         ];
-         <% min_data = @totals_by_column.values.min || 0 %>;
-         <% max_data = @totals_by_column.values.max || 100 %>;
-        const min_value = <%= (min_data / 1000).floor * 1000  %>;
-        const max_value = <%= (max_data / 1000.0).ceil * 1000 %>;
+        <%
+                min_data = @totals_by_column.values.min || 0
+                max_data = @totals_by_column.values.max || 100
+
+                # Decide a good step based on data range
+                range = max_data - min_data
+                step = case
+                      when range <= 100 then 10
+                      when range <= 500 then 50
+                      when range <= 1000 then 100
+                      else 500
+                      end
+
+                # Adjust min and max using step
+                min_value = (min_data / step.to_f).floor * step
+                max_value = (max_data / step.to_f).ceil * step
+        %>
+
+        const min_value = <%= min_value %>;
+        const max_value = <%= max_value %>;
+
 
         window.forecastChart = new Chart(ctx, {
             type: 'line',
