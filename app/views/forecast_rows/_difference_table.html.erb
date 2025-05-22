@@ -8,8 +8,8 @@
       <table class="data-table">
         <thead>
         <tr>
-          <% reordered_keys.each do |key| %>
-            <th><%= key %></th>
+          <% reordered_keys.each_with_index do |key, index| %>
+            <th class="<%= index < 3 ? 'sticky' : '' %>"><%= key %></th>
           <% end %>
         </tr>
         </thead>
@@ -46,10 +46,10 @@
                   const clusterizeRows = [
                       <% comparison_data.each do |row| %>
                       `<tr>
-          <% reordered_keys.each do |key| %>
+          <% reordered_keys.each_with_index do |key, index| %>
             <% original_index = all_keys.index(key) %>
             <% diff = row[:values][original_index] %>
-            <td style="color:<%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'black' %>;">
+            <td class="<%=index < 3 ? 'sticky' : '' %>" style="color:<%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'black' %>;">
               <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
             </td>
           <% end %>

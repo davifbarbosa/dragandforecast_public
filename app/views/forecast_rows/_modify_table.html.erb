@@ -19,16 +19,16 @@
     <table class="data-table">
       <thead id="table-headers">
       <tr>
-        <% modify_forecast_rows_header.each do |key| %>
-          <th><%= key %></th>
+        <% modify_forecast_rows_header.each_with_index do |key, index| %>
+          <th class="<%=index < 3 ? 'sticky' : '' %>"><%= key %></th>
         <% end %>
       </tr>
       </thead>
       <tbody id="data-table-body">
       <% modify_table_forecast_rows.each do |forecast_row| %>
         <tr>
-          <% modify_forecast_rows_header.each do |key| %>
-            <td><%= forecast_row[:data][key] %></td>
+          <% modify_forecast_rows_header.each_with_index do |key, index| %>
+            <td class="<%=index < 3 ? 'sticky' : '' %>"><%= forecast_row[:data][key] %></td>
           <% end %>
         </tr>
       <% end %>
