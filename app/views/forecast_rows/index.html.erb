@@ -230,8 +230,10 @@
 
             select.form.submit();
         };
-
-
+        const ctx = document.getElementById('forecast-chart').getContext('2d');
+        if (window.forecastChart) {
+            window.forecastChart.destroy();
+        }
         let actuals = [];
         let isDarkMode = false;
         let originalValue = null;
@@ -258,7 +260,7 @@
             return 'red';
         });
 
-        new Chart(document.getElementById('forecast-chart'), {
+       const forecastChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -268,7 +270,7 @@
                         data: <%=@totals_by_column.to_h.values %>, // This one is draggable
                         borderColor: colors,
                         segment: {
-                            borderColor: ['green', 'red', 'blue'],
+                            borderColor: ctx => colors[ctx.p1DataIndex]
                         },
                         borderWidth: 2,
                         fill: false,
