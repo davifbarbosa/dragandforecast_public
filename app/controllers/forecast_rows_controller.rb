@@ -52,7 +52,8 @@ class ForecastRowsController < BaseController
       product = forecast_rows.last.id
       @filter_key = { product: product }
       @forecast_rows = clean_forecastrow(forecast_rows)
-      @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_by_column = Hash.new(0)
+      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       clean_forecast_rows.each do |forecast|
@@ -105,6 +106,7 @@ class ForecastRowsController < BaseController
       subcategory_name = params[:subcategory]
       @filter_key = { subcategory: subcategory_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       @forecast_rows = clean_forecast_rows
@@ -160,6 +162,7 @@ class ForecastRowsController < BaseController
       category_name = params[:category]
       @filter_key = { category: category_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
+      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       @forecast_rows = clean_forecast_rows
