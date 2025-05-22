@@ -45,7 +45,6 @@ class ForecastRowsController < BaseController
   def index
     #common
     forecast_rows1 = current_user.forecast_rows
-    forecast_row_backups = current_user.forecast_row_backups
     # actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
@@ -54,7 +53,6 @@ class ForecastRowsController < BaseController
       @forecast_rows = clean_forecastrow(forecast_rows)
       @totals_by_column = Hash.new(0)
       @actual_columns = Hash.new(0)
-      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       clean_forecast_rows.each do |forecast|
@@ -78,7 +76,16 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-
+      forecast_row_backups = current_user.forecast_row_backups.where("data ->> 'Product' = ?", params[:product])
+      @totals_backup_by_column = Hash.new(0)
+      forecastrow_backups = clean_forecastrow_backups(forecast_row_backups)
+      forecastrow_backups.each do |bk|
+        bk[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @totals_backup_by_column[key] += numeric_value
+        end
+      end
       forecast_id = forecast_rows.last.id
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
@@ -117,7 +124,6 @@ class ForecastRowsController < BaseController
       subcategory_name = params[:subcategory]
       @filter_key = { subcategory: subcategory_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
       @actual_columns = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -144,7 +150,16 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-
+      forecast_row_backups = current_user.forecast_row_backups.where("data ->> 'Sub-Category' = ?", params[:subcategory])
+      @totals_backup_by_column = Hash.new(0)
+      forecastrow_backups = clean_forecastrow_backups(forecast_row_backups)
+      forecastrow_backups.each do |bk|
+        bk[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @totals_backup_by_column[key] += numeric_value
+        end
+      end
       forecast_id = forecast_rows.last.id
       # single_row_difference(forecast_id)
       # Handle Avg1
@@ -185,7 +200,6 @@ class ForecastRowsController < BaseController
       category_name = params[:category]
       @filter_key = { category: category_name }
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-      @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
       @actual_columns = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -212,7 +226,16 @@ class ForecastRowsController < BaseController
           @actual_columns[key] += numeric_value
         end
       end
-
+      forecast_row_backups = current_user.forecast_row_backups.where("data ->> 'Category' = ?", params[:category])
+      @totals_backup_by_column = Hash.new(0)
+      forecastrow_backups = clean_forecastrow_backups(forecast_row_backups)
+      forecastrow_backups.each do |bk|
+        bk[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @totals_backup_by_column[key] += numeric_value
+        end
+      end
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
@@ -297,12 +320,13 @@ class ForecastRowsController < BaseController
           @average2 = first_six_values.sum / first_six_values.size
         end
       end
-      @totals_backup_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
-      clean_forecast_row_backups = clean_forecastrow_backups(forecast_row_backups)
-      clean_forecast_row_backups.each do |forecast|
-        forecast[:data].each do |key, value|
+      forecast_row_backups = current_user.forecast_row_backups
+      @totals_backup_by_column = Hash.new(0)
+      forecastrow_backups = clean_forecastrow_backups(forecast_row_backups)
+      forecastrow_backups.each do |bk|
+        bk[:data].each do |key, value|
           numeric_value = value.to_f
-          # Sum by column
+          # Sum by column filter
           @totals_backup_by_column[key] += numeric_value
         end
       end
