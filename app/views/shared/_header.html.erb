@@ -8,11 +8,11 @@
     <nav id="navmenu" class="navmenu">
       <ul>
         <li><%= link_to 'Home', root_path, class: 'active' %></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#team">Team</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><%= link_to 'About', root_path(anchor: 'about') %></li>
+        <li><%= link_to 'Services', root_path(anchor: 'services') %></li>
+        <li><%= link_to 'Pricing', root_path(anchor: 'pricing') %></li>
+        <li><%= link_to 'Team', root_path(anchor: 'team') %></li>
+        <li><%= link_to 'Contact', root_path(anchor: 'contact') %></li>
         <li><%= link_to 'Forecast & Actual', forecast_path %></li>
         <% if user_signed_in? %>
           <li class="dropdown"><a href="#"><span><%=current_user.full_name %></span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
