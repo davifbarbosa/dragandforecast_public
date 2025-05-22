@@ -1,6 +1,20 @@
+
 class ForecastRowsController < BaseController
+  require 'axlsx'
   before_action :check_uploaded_file, only: %i[ create]
   before_action :db_exist?, only: %i[ create]
+
+  def export
+    @forecast_rows = current_user.forecast_rows
+    timestamp = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+    filename = "data_export_#{timestamp}.xlsx"
+    respond_to do |format|
+      format.xlsx {
+        response.headers['Content-Disposition'] = "attachment; filename=\"#{filename}\""
+      }
+    end
+  end
+
   def table_modify
     # debugger
     forecast_rows1 = current_user.forecast_rows
@@ -106,7 +120,7 @@ class ForecastRowsController < BaseController
         end
       end
       forecast_id = forecast_rows.last.id
-      single_row_difference(forecast_id)
+      # single_row_difference(forecast_id)
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?

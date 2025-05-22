@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   post 'create-backup', to: 'dashboard#create_backup'
   get 'forecast', to: 'forecast_rows#index', as: 'forecast'
   get 'load_select', to: 'forecast_rows#load_select'
+  get "forecast_rows/export", to: "forecast_rows#export", defaults: { format: :xlsx }
   resources :forecast_rows, only: [:index, :create, :update]
   resources :forecast_rows do
     collection do

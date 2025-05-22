@@ -51,6 +51,7 @@ gem 'pundit'
 gem 'bootstrap', '~> 5.3.0'
 gem 'sassc-rails'
 gem 'jquery-rails'
+gem 'caxlsx_rails' # or 'axlsx_rails' if using older Rails versions
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

@@ -21,7 +21,9 @@
       <%= form.submit "Import actuals CSV", class: 'd-none' %>
     <% end %>
 
-    <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>
+<!--    <button class="custom-button" onclick="exportData()">Export DB (XLS)</button>-->
+    <%= link_to "Export DB (XLS)", forecast_rows_export_path(format: :xlsx), class: "btn btn-primary custom-button" %>
+
     <button type="button" class="custom-button" onclick="applyUpdates()">Apply Filters</button>
 
     <%= button_to 'Clear Forecast', destroy_all_forecast_rows_path,

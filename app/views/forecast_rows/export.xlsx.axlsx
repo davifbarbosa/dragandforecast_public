@@ -1,0 +1,13 @@
+wb = xlsx_package.workbook
+
+wb.add_worksheet(name: "Forecast Data") do |sheet|
+  headers = ["Product", "Category", "Sub-Category"] + @forecast_rows.first.data.keys.grep(/\d{4}-\d{2}/).sort
+  sheet.add_row headers
+
+  @forecast_rows.each do |row|
+    data = row.data
+    product_info = [data["Product"], data["Category"], data["Sub-Category"]]
+    monthly_values = headers[3..].map { |month| data[month] }
+    sheet.add_row product_info + monthly_values
+  end
+end
