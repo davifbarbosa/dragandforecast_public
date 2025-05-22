@@ -259,7 +259,8 @@
             }
         };
 
-        inputField.onblur = () => {
+        // Shared handler to process and save value
+        function handleInputSave() {
             const newValue = parseFloat(inputField.value);
             if (!isNaN(newValue)) {
                 const index = parseInt(inputField.dataset.index);
@@ -267,7 +268,7 @@
                 const oldValue = parseFloat(rawData[0].data[key]);
                 const percentChange = ((newValue - oldValue) / oldValue) * 100;
 
-                // Update chart + rawData
+                // Update chart and rawData
                 window.forecastChart.data.datasets[0].data[index] = newValue;
                 rawData[0].data[key] = newValue;
                 window.forecastChart.update();
@@ -292,7 +293,18 @@
             }
 
             inputField.style.display = 'none';
-        };
+        }
+
+// Save on blur
+        inputField.onblur = handleInputSave;
+
+// Save on Enter
+        inputField.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                handleInputSave();
+            }
+        });
 
 
         const ctx = document.getElementById('forecast-chart').getContext('2d');
@@ -330,8 +342,8 @@
             ...Array(bluePeriods).fill('blue'),
             ...Array(redPeriods).fill('red')
         ];
-         <% min_data = @totals_backup_by_column.values.min || 0 %>;
-         <% max_data = @totals_backup_by_column.values.max || 100 %>;
+         <% min_data = @totals_by_column.values.min || 0 %>;
+         <% max_data = @totals_by_column.values.max || 100 %>;
         const min_value = <%= (min_data / 1000).floor * 1000  %>;
         const max_value = <%= (max_data / 1000.0).ceil * 1000 %>;
 
