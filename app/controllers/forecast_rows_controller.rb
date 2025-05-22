@@ -7,6 +7,45 @@ class ForecastRowsController < BaseController
 
   def export
     @forecast_rows = current_user.forecast_rows
+    @backup_table = current_user.forecast_row_backups
+
+    forecast_rows = current_user.forecast_rows.includes(:forecast_row_backup)
+    @comparison_data = []
+    @all_keys = []
+    priority_cols = ["Product", "Category", "Sub-Category"]
+    forecast_rows.each do |row|
+      backup = row.forecast_row_backup
+      next unless backup
+
+      current_data = row.data
+      backup_data = backup.data
+
+      keys = (current_data.keys + backup_data.keys).uniq.sort
+      @all_keys |= keys
+
+      differences = keys.map do |key|
+        original = backup_data[key]
+        updated = current_data[key]
+
+        if priority_cols.include?(key)
+          # Show original text value for these columns
+          original.to_s
+        else
+          if is_numeric?(original) && is_numeric?(updated)
+            (updated.to_f - original.to_f).round(2)
+          else
+            original.to_s == updated.to_s ? 0 : 'changed'
+          end
+        end
+      end
+
+      @comparison_data << {
+        row_id: row.id,
+        values: differences
+      }
+    end
+
+
     timestamp = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
     filename = "data_export_#{timestamp}.xlsx"
     respond_to do |format|
