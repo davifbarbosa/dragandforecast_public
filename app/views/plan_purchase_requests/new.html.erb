@@ -54,7 +54,10 @@
           <div class="col-12 mt-3">
             <div class="form-check">
               <%= f.check_box :agreed_to_terms, class: "form-check-input", required: true %>
-              <%= f.label :agreed_to_terms, "I agree to the Terms and Conditions", class: "form-check-label" %>
+              <%= f.label :agreed_to_terms, class: "form-check-label" do %>
+                I agree to the
+                <%= link_to "Terms and Conditions", privacy_path, target: "_blank", rel: "noopener" %>
+              <% end %>
             </div>
           </div>
 
