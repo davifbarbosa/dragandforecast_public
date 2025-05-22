@@ -1,6 +1,7 @@
 
 class ForecastRowsController < BaseController
   require 'axlsx'
+  before_action :load_colors, only: %i[ index create]
   before_action :check_uploaded_file, only: %i[ create]
   before_action :db_exist?, only: %i[ create]
 
@@ -531,6 +532,13 @@ class ForecastRowsController < BaseController
   end
 
   private
+
+  def load_colors
+    # Load saved color periods
+    @green = current_user.green_periods || 12
+    @blue = current_user.blue_periods || 12
+    @red = current_user.red_periods || 12
+  end
 
   def db_exist?
     forecast_rows = current_user.forecast_rows

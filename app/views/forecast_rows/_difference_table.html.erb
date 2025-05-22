@@ -23,19 +23,13 @@
   <script>
       document.addEventListener("turbo:frame-load", function (event) {
           if (event.target.id === "difference_table") {
-              console.log("✅ Frame loaded. Size <%=comparison_data.size %>");
-
               // Check if Clusterize is already available
               if (typeof Clusterize === "undefined") {
-                  console.log('🚨 Clusterize is undefined. Loading now...');
-
                   const script = document.createElement("script");
                   // script.src = "https://cdnjs.cloudflare.com/ajax/libs/clusterize.js/0.18.1/clusterize.min.js";
                   script.src = "https://cdn.jsdelivr.net/npm/clusterize.js@0.18.1/clusterize.min.js";
-
                   // Debug loading
                   script.onload = function () {
-                      console.log('✅ Clusterize script loaded!');
                       initClusterize();
                   };
 
@@ -45,13 +39,10 @@
 
                   document.body.appendChild(script);
               } else {
-                  console.log('✅ Clusterize already loaded');
                   initClusterize();
               }
 
               function initClusterize() {
-                  console.log('🚀 Initializing Clusterize...');
-
                   const clusterizeRows = [
                       <% comparison_data.each do |row| %>
                       `<tr>
@@ -65,10 +56,6 @@
         </tr>`,
                       <% end %>
                   ];
-
-                  console.log(`📦 Rows loaded: ${clusterizeRows.length}`);
-
-
                   new Clusterize({
                       rows: clusterizeRows,
                       scrollId: 'scroll-area',

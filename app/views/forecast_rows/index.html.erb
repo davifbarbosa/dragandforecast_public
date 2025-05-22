@@ -52,7 +52,6 @@
         if (form) form.submit();
     }
     document.addEventListener("turbo:load", function () {
-        console.log("Turbo page loaded");
         // --- Apply Button Submission ---
         // applyUpdates();
         // --- Decimal format checkboxes ---
@@ -231,7 +230,8 @@
             select.form.submit();
         };
         const ctx = document.getElementById('forecast-chart').getContext('2d');
-        if (window.forecastChart) {
+        if (!ctx) return;
+        if (window.forecastChart instanceof Chart) {
             window.forecastChart.destroy();
         }
         let actuals = [];
@@ -252,21 +252,24 @@
         }
 
         const rowId = rawData[0].id;
-        const split1 = 12;
-        const split2 = 24;
-        const colors = values.map((_, i) => {
-            if (i < split1) return 'green';
-            if (i < split2) return 'blue';
-            return 'red';
-        });
+        const greenPeriods = <%= @green %>;
+        const bluePeriods = <%= @blue %>;
+        const redPeriods = <%= @red %>;
+        const total = greenPeriods + bluePeriods + redPeriods;
+        if (total !== values.length) {
+            // alert(`Warning: Saved periods total (${total}) does not match data length (${values.length})`);
+        }
+        const colors = [
+            ...Array(greenPeriods).fill('green'),
+            ...Array(bluePeriods).fill('blue'),
+            ...Array(redPeriods).fill('red')
+        ];
          <% min_data = @totals_backup_by_column.values.min || 0 %>;
          <% max_data = @totals_backup_by_column.values.max || 100 %>;
         const min_value = <%= (min_data / 1000).floor * 1000  %>;
-        console.log("Min value is: "+ min_value);
         const max_value = <%= (max_data / 1000.0).ceil * 1000 %>;
-        console.log("Max value is: "+ max_value);
 
-        const forecastChart = new Chart(ctx, {
+        window.forecastChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -453,6 +456,19 @@
             },
             plugins: [ChartDataLabels]
         });
+
+        // Function from above
+        function generateSegmentColors(valuesLength, userColors) {
+            const segmentSize = Math.ceil(valuesLength / userColors.length);
+            const colors = [];
+
+            for (let i = 0; i < valuesLength; i++) {
+                const colorIndex = Math.floor(i / segmentSize);
+                colors.push(userColors[colorIndex] || userColors[userColors.length - 1]);
+            }
+
+            return colors;
+        }
     });
 </script>
 <div class="loading-popup" style="display: none;">
