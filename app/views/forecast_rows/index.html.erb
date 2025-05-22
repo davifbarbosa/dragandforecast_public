@@ -10,6 +10,7 @@
     </div>
     <div class="scrollable-content">
       <%= render partial: 'chart' %>
+      <input type="number" id="chart-point-editor" style="display:none; position:absolute; z-index:1000; width:80px;" />
 
       <turbo-frame id="modify_table" src="<%= table_modify_forecast_rows_path(data: @filter_key) %>">
         <div class="text-center p-4">
@@ -229,6 +230,71 @@
 
             select.form.submit();
         };
+
+        const inputField = document.getElementById("chart-point-editor");
+
+        document.getElementById("forecast-chart").onclick = function (event) {
+            const canvasPosition = Chart.helpers.getRelativePosition(event, window.forecastChart);
+            const points = window.forecastChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+
+            if (points.length > 0) {
+                const pointIndex = points[0].index;
+                const datasetIndex = points[0].datasetIndex;
+                const meta = window.forecastChart.getDatasetMeta(datasetIndex);
+                const point = meta.data[pointIndex];
+                const rect = event.target.getBoundingClientRect();
+                inputField.value = point.$context.raw; // Show current value
+                inputField.dataset.index = pointIndex;
+                inputField.style.left = `${event.pageX}px`;
+                console.log(event);
+                console.log(rect);
+                inputField.style.top = `${event.pageY}px`;
+                inputField.style.width = "80px";
+                inputField.style.zIndex = "1000";
+                inputField.style.display = 'block';
+                document.body.appendChild(inputField);
+                inputField.focus();
+            } else {
+                inputField.style.display = 'none';
+            }
+        };
+
+        inputField.onblur = () => {
+            const newValue = parseFloat(inputField.value);
+            if (!isNaN(newValue)) {
+                const index = parseInt(inputField.dataset.index);
+                const key = labels[index];
+                const oldValue = parseFloat(rawData[0].data[key]);
+                const percentChange = ((newValue - oldValue) / oldValue) * 100;
+
+                // Update chart + rawData
+                window.forecastChart.data.datasets[0].data[index] = newValue;
+                rawData[0].data[key] = newValue;
+                window.forecastChart.update();
+
+                // Save via PATCH
+                fetch(`/forecast_rows/${rowId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
+                    },
+                    body: JSON.stringify({
+                        data: rawData[0].data,
+                        changed_key: key,
+                        percent_change: percentChange.toFixed(2)
+                    })
+                }).then(response => {
+                    if (!response.ok) {
+                        alert("Failed to save updated value.");
+                    }
+                });
+            }
+
+            inputField.style.display = 'none';
+        };
+
+
         const ctx = document.getElementById('forecast-chart').getContext('2d');
         if (!ctx) return;
         if (window.forecastChart instanceof Chart) {

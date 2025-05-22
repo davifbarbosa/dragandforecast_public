@@ -350,7 +350,7 @@ class ForecastRowsController < BaseController
         real_value = row.data[changed_key]&.to_f
         changed_value = real_value.to_f * (percent_change.to_f / 100.0)
         remain_value = real_value + changed_value
-        row.data[changed_key] = remain_value.to_i # Replace with your new value
+        row.data[changed_key] = remain_value.to_f # Replace with your new value
         row.save!
       end
       render json: { status: 'updated' }
