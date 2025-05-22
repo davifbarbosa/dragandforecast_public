@@ -46,13 +46,14 @@ class ForecastRowsController < BaseController
     #common
     forecast_rows1 = current_user.forecast_rows
     forecast_row_backups = current_user.forecast_row_backups
-    actuals = current_user.actuals
+    # actuals = current_user.actuals
     if params[:product].present? && params[:product] != "Total"
       forecast_rows = forecast_rows1.where("data ->> 'Product' = ?", params[:product])
       product = forecast_rows.last.id
       @filter_key = { product: product }
       @forecast_rows = clean_forecastrow(forecast_rows)
       @totals_by_column = Hash.new(0)
+      @actual_columns = Hash.new(0)
       @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       clean_forecast_rows = clean_forecastrow(forecast_rows)
@@ -68,6 +69,16 @@ class ForecastRowsController < BaseController
           end
         end
       end
+      actuals = current_user.actuals.where("data ->> 'Product' = ?", params[:product])
+      clean_actual_rows = clean_actual_columns(actuals)
+      clean_actual_rows.each do |actual|
+        actual[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @actual_columns[key] += numeric_value
+        end
+      end
+
       forecast_id = forecast_rows.last.id
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
@@ -108,6 +119,7 @@ class ForecastRowsController < BaseController
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
+      @actual_columns = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       @forecast_rows = clean_forecast_rows
       clean_forecast_rows.each do |forecast|
@@ -122,6 +134,17 @@ class ForecastRowsController < BaseController
           end
         end
       end
+
+      actuals = current_user.actuals.where("data ->> 'Sub-Category' = ?", params[:subcategory])
+      clean_actual_rows = clean_actual_columns(actuals)
+      clean_actual_rows.each do |actual|
+        actual[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @actual_columns[key] += numeric_value
+        end
+      end
+
       forecast_id = forecast_rows.last.id
       # single_row_difference(forecast_id)
       # Handle Avg1
@@ -164,6 +187,7 @@ class ForecastRowsController < BaseController
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_backup_by_column = @totals_by_column
       @totals_filter_years = Hash.new(0)
+      @actual_columns = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows)
       @forecast_rows = clean_forecast_rows
       clean_forecast_rows.each do |forecast|
@@ -178,6 +202,17 @@ class ForecastRowsController < BaseController
           end
         end
       end
+
+      actuals = current_user.actuals.where("data ->> 'Category' = ?", params[:category])
+      clean_actual_rows = clean_actual_columns(actuals)
+      clean_actual_rows.each do |actual|
+        actual[:data].each do |key, value|
+          numeric_value = value.to_f
+          # Sum by column filter
+          @actual_columns[key] += numeric_value
+        end
+      end
+
       # Handle Avg1
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
@@ -211,6 +246,7 @@ class ForecastRowsController < BaseController
         end
       end
     else
+      actuals = current_user.actuals
       @totals_by_column = Hash.new(0)   # e.g., "Jan 2024" => 5000.0
       @totals_filter_years = Hash.new(0)
       clean_forecast_rows = clean_forecastrow(forecast_rows1)
