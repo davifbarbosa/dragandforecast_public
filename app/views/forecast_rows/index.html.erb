@@ -259,8 +259,8 @@
             if (i < split2) return 'blue';
             return 'red';
         });
-         <% min_data = @totals_by_column.values.min %>;
-         <% max_data = @totals_by_column.values.max %>;
+         <% min_data = @totals_backup_by_column.values.min || 0 %>;
+         <% max_data = @totals_backup_by_column.values.max || 100 %>;
         const min_value = <%= (min_data / 1000).floor * 1000  %>;
         console.log("Min value is: "+ min_value);
         const max_value = <%= (max_data / 1000.0).ceil * 1000 %>;
