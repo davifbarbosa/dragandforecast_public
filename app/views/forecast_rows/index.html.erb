@@ -53,6 +53,12 @@
         if (form) form.submit();
     }
     document.addEventListener("turbo:load", function () {
+        let which_type = "all"
+        let select_type = "total"
+        <% if params[:level].present? %>
+            which_type = "<%= params[:level] %>";
+            select_type = "<%= (params[params[:level]])%>";
+        <% end %>
         // --- Apply Button Submission ---
         // applyUpdates();
         // --- Decimal format checkboxes ---
@@ -502,6 +508,8 @@
                                 body: JSON.stringify({
                                     data: rawData[0].data,
                                     changed_key: key,
+                                    which_type: which_type,
+                                    select_type: select_type,
                                     percent_change: percentChange.toFixed(2)
                                 })
                             }).then(response => {

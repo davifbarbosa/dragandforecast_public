@@ -440,19 +440,95 @@ class ForecastRowsController < BaseController
   end
 
   def update
-    row = current_user.forecast_rows.find(params[:id])
-    if params[:changed_key].present?
-      changed_key = params[:changed_key]
-      percent_change = params[:percent_change]
-      current_user.forecast_rows.find_each do |row|
-        next unless row.data[changed_key] # optional: skip rows that don't have the key
-        real_value = row.data[changed_key]&.to_f
-        changed_value = real_value.to_f * (percent_change.to_f / 100.0)
-        remain_value = real_value + changed_value
-        row.data[changed_key] = remain_value.to_f # Replace with your new value
-        row.save!
+    if params[:which_type] == "all" && params[:select_type] == "total"
+      if params[:changed_key].present?
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        current_user.forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+        render json: { status: 'updated' }
       end
-      render json: { status: 'updated' }
+    elsif params[:which_type] == "subcategory" && params[:select_type].present?
+      if params[:select_type] == "Total"
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        current_user.forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      else
+        subcategory_forecast_rows = current_user.forecast_rows.where("data ->> 'Sub-Category' = ?", params[:select_type])
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        subcategory_forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      end
+    elsif params[:which_type] == "category" && params[:select_type].present?
+      if params[:select_type] == "Total"
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        current_user.forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      else
+        category_forecast_rows = current_user.forecast_rows.where("data ->> 'Category' = ?", params[:select_type])
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        category_forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      end
+    elsif params[:which_type] == "product" && params[:select_type].present?
+      if params[:select_type] == "Total"
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        current_user.forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      else
+        category_forecast_rows = current_user.forecast_rows.where("data ->> 'Product' = ?", params[:select_type])
+        changed_key = params[:changed_key]
+        percent_change = params[:percent_change]
+        category_forecast_rows.find_each do |row|
+          next unless row.data[changed_key] # optional: skip rows that don't have the key
+          real_value = row.data[changed_key]&.to_f
+          changed_value = real_value.to_f * (percent_change.to_f / 100.0)
+          remain_value = real_value + changed_value
+          row.data[changed_key] = remain_value.to_f # Replace with your new value
+          row.save!
+        end
+      end
     end
   end
 
