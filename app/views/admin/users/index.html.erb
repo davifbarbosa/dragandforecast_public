@@ -33,6 +33,13 @@
               <td><%= user.subscription_plan&.name %></td>
               <td>
                 <%= link_to 'Edit', edit_admin_user_path(user), class: 'btn btn-sm btn-primary' %>
+                <%= button_to admin_user_path(user),
+              method: :delete,
+              data: { turbo_confirm: 'Are you sure you want to delete this user?' },
+              class: 'btn btn-sm btn-danger',
+              form: { class: 'd-inline' } do %>
+              Delete
+              <% end %>
               </td>
             </tr>
           <% end %>

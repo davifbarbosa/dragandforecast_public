@@ -7,7 +7,7 @@ class User < ApplicationRecord
   has_many :forecast_rows, dependent: :destroy
   has_many :forecast_row_backups, dependent: :destroy
   has_many :actuals, dependent: :destroy
-  has_many :plan_purchase_requests
+  has_many :plan_purchase_requests, dependent: :destroy
 
   enum role: { user: 0, admin: 1 }
   after_create :assign_default_plan

@@ -20,10 +20,16 @@ class Admin::UsersController < BaseController
     end
   end
 
-  def destroy
-    User.find(params[:id]).destroy
-    redirect_to admin_users_path, notice: 'User deleted.'
+def destroy
+  user = User.find(params[:id])
+  if user == current_user
+    redirect_to admin_users_path, alert: 'Você não pode se excluir.'
+  else
+    user.destroy
+    redirect_to admin_users_path, notice: 'Usuário deletado com sucesso.'
   end
+end
+
 
   private
 
