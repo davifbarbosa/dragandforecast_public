@@ -33,3 +33,4 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+credentials_base64.txt 
