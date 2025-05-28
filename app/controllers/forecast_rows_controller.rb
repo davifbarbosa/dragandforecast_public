@@ -130,15 +130,15 @@ class ForecastRowsController < BaseController
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
           keys = params[:avg1_selected_dates]
-          totals_hash = @totals_by_column.to_h
+          totals_hash = @actual_columns.to_h
           matching_values = keys.map { |key| totals_hash[key] }
           @average1 = matching_values.sum / matching_values.size
         else
-          @average1 = nil # user unchecked all -> no line
+          @average1 = nil
         end
       else
-        if @totals_by_column.present?
-          first_three_values = @totals_by_column.values.first(3)
+        if @actual_columns.present?
+          first_three_values = @actual_columns.values.first(3)
           @average1 = first_three_values.sum / first_three_values.size
         end
       end
@@ -205,15 +205,15 @@ class ForecastRowsController < BaseController
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
           keys = params[:avg1_selected_dates]
-          totals_hash = @totals_by_column.to_h
+          totals_hash = @actual_columns.to_h
           matching_values = keys.map { |key| totals_hash[key] }
           @average1 = matching_values.sum / matching_values.size
         else
-          @average1 = nil # user unchecked all -> no line
+          @average1 = nil
         end
       else
-        if @totals_by_column.present?
-          first_three_values = @totals_by_column.values.first(3)
+        if @actual_columns.present?
+          first_three_values = @actual_columns.values.first(3)
           @average1 = first_three_values.sum / first_three_values.size
         end
       end
@@ -279,15 +279,15 @@ class ForecastRowsController < BaseController
       if params[:avg1_filter_applied] == "true"
         if params[:avg1_selected_dates].present?
           keys = params[:avg1_selected_dates]
-          totals_hash = @totals_by_column.to_h
+          totals_hash = @actual_columns.to_h
           matching_values = keys.map { |key| totals_hash[key] }
           @average1 = matching_values.sum / matching_values.size
         else
-          @average1 = nil # user unchecked all -> no line
+          @average1 = nil
         end
       else
-        if @totals_by_column.present?
-          first_three_values = @totals_by_column.values.first(3)
+        if @actual_columns.present?
+          first_three_values = @actual_columns.values.first(3)
           @average1 = first_three_values.sum / first_three_values.size
         end
       end

@@ -42,10 +42,15 @@ class CsvImportService
   private
 
   def self.normalize_row(row_data, decimal_format)
-    row_data.transform_values do |value|
+    # Remove caractere BOM invisível (\uFEFF) das chaves
+    clean_data = row_data.transform_keys { |key| key.to_s.gsub("\uFEFF", "") }
+
+    # Normaliza os valores numéricos (como já era feito)
+    clean_data.transform_values do |value|
       normalize_decimal_value(value, decimal_format)
     end
   end
+
 
   def self.normalize_decimal_value(value, decimal_format)
     return value if value.blank?

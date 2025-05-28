@@ -48,9 +48,9 @@
                       `<tr>
           <% reordered_keys.each_with_index do |key, index| %>
             <% original_index = all_keys.index(key) %>
-            <% diff = row[:values][original_index] %>
+            <% diff = original_index ? row[:values][original_index] : nil %>
             <td class="<%=index < 3 ? 'sticky' : '' %>" style="color:<%= diff.is_a?(Numeric) ? (diff > 0 ? 'green' : (diff < 0 ? 'red' : 'black')) : 'black' %>;">
-              <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : diff %>
+              <%= diff.is_a?(Numeric) ? (diff == 0 ? '0' : (diff > 0 ? "+#{diff}" : diff)) : '' %>
             </td>
           <% end %>
         </tr>`,

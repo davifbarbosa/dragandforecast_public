@@ -53,6 +53,14 @@
         if (form) form.submit();
     }
     document.addEventListener("turbo:load", function () {
+        function debounce(func, delay) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+        }
+
         let which_type = "all"
         let select_type = "total"
         <% if params[:level].present? %>
@@ -93,12 +101,7 @@
             });
         });
 
-        // --- Auto-submit on checkbox change ---
-        document.querySelectorAll(".auto-submit-checkbox").forEach(checkbox => {
-            checkbox.addEventListener("change", function () {
-                document.getElementById("filter-form").submit();
-            });
-        });
+
 
         // --- Custom Dropdown Toggle ---
         function toggleDropdown(dropdownId) {
@@ -297,9 +300,29 @@
                     }
                 });
             }
-
             inputField.style.display = 'none';
         }
+                // --- Avg1 delayed submission ---
+                const delayedAvg1Submit = debounce(() => {
+                const form = document.getElementById("filter-form");
+                if (form) form.submit();
+                }, 800);
+
+                document.querySelectorAll('input[name="avg1_selected_dates[]"]').forEach(box => {
+                box.addEventListener('change', delayedAvg1Submit);
+                });
+
+                // --- Avg2 delayed submission ---
+                const delayedAvg2Submit = debounce(() => {
+                const form = document.getElementById("filter-form");
+                if (form) form.submit();
+                }, 800);
+
+                document.querySelectorAll('input[name="avg2_selected_dates[]"]').forEach(box => {
+                box.addEventListener('change', delayedAvg2Submit);
+                });
+                
+
 
 // Save on blur
         inputField.onblur = handleInputSave;
@@ -344,9 +367,9 @@
             // alert(`Warning: Saved periods total (${total}) does not match data length (${values.length})`);
         }
         const colors = [
-            ...Array(greenPeriods).fill('green'),
-            ...Array(bluePeriods).fill('blue'),
-            ...Array(redPeriods).fill('red')
+            ...Array(greenPeriods).fill('rgba(102, 205, 170, 0.8)'), // medium aquamarine
+            ...Array(bluePeriods).fill('rgba(100, 149, 237, 0.8)'),  // cornflower blue
+            ...Array(redPeriods).fill('rgba(240, 128, 128, 0.8)')    // light coral
         ];
         <%
                 min_data = @totals_by_column.values.min || 0
@@ -362,7 +385,7 @@
                       end
 
                 # Adjust min and max using step
-                min_value = (min_data / step.to_f).floor * step
+                min_value = 0
                 max_value = (max_data / step.to_f).ceil * step
         %>
 
@@ -376,7 +399,7 @@
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Actual & Forecast',
+                        label: 'Forecast',
                         data: <%=@totals_by_column.to_h.values %>, // This one is draggable
                         borderColor: colors,
                         segment: {
@@ -390,13 +413,14 @@
                         tension: 0.4
                     },
                     {
-                        label: 'Original Backup',
+                        label: 'Backup Forecast',
                         data: <%=@totals_backup_by_column.to_h.values %>, // Cloned, not draggable
                         borderColor: 'gray',
                         borderWidth: 2,
                         borderDash: [5, 5],
                         fill: false,
-                        pointRadius: 0,
+                        pointRadius: 5,
+                        tension: 0.4,
                         datalabels: {
                             display: false
                         }
@@ -413,7 +437,7 @@
                     {
                         label: 'Avg-1',
                         data: Array(labels.length).fill(sumOfAverages1),
-                        borderColor: 'blue',
+                        borderColor: 'rgba(100, 149, 237, 0.8)', // cornflower blue pastel,
                         borderWidth: 2,
                         borderDash: [3, 3],
                         pointRadius: 0,
@@ -433,7 +457,7 @@
                     {
                         label: 'Avg-2',
                         data: Array(labels.length).fill(sumOfAverages2),
-                        borderColor: 'red',
+                        borderColor: 'rgba(255, 99, 132, 0.8)',
                         borderWidth: 2,
                         borderDash: [3, 3],
                         pointRadius: 0,
@@ -545,7 +569,7 @@
                         },
                         beginAtZero: true,
                         min: min_value,
-                        max: max_value,
+                        suggestedMax: max_value,
                         ticks: {
                             callback: value => Math.round(value).toLocaleString(),
                             color: isDarkMode ? "#ffffff" : "#000000"
