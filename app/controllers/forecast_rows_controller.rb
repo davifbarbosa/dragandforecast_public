@@ -402,24 +402,6 @@ class ForecastRowsController < BaseController
       avg_keys = forecast_rows1.first.data.keys
       @avg = avg_keys.reject { |key| ["Product", "Category", "Sub-Category"].include?(key) }
     end
-    @modify_table_forecast_rows = forecast_rows1
-    @modify_forecast_rows_header = forecast_rows1.first&.data&.keys || []
-
-    min_data = @totals_by_column.values.min || 0
-    max_data = @totals_by_column.values.max || 100
-
-    range = max_data - min_data
-    step = case
-          when range <= 100 then 10
-          when range <= 500 then 50
-          when range <= 1000 then 100
-          else 500
-          end
-
-    @min_value = 0
-    @max_value = (max_data.to_f / step).ceil * step
-
-
   end
   def table_backup
     if params[:data].present? && params[:data][:product].present?
