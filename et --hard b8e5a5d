@@ -1,0 +1,81 @@
+[33m6b49ba9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add delete user button to admin panel
+[33mb8e5a5d[m Atualiza dependências e restaura ambiente local
+[33mac8b944[m Update production.rb force ssl
+[33m0bc34c6[m ssl files added
+[33m434a1f2[m ssl files added
+[33m9c7f7ea[m mobile navigation toggle issue fixed
+[33mcd2692d[m issue updated
+[33m03d06b4[m export all tables in single file
+[33m979c94a[m table issue fixed
+[33m2822284[m chart issue fixed
+[33m9f7f8de[m backup line fixed
+[33mb20ef58[m actuals bars issue fixed
+[33mb1c6a27[m on chart input value manually added
+[33mc7566d8[m on chart input value manually added
+[33m81f074e[m on chart input value manually added
+[33m9325e70[m crash fixed
+[33m5eee2f0[m privacy page updated
+[33m72c052b[m header navigation updated
+[33mfca76f0[m color updated
+[33m655534f[m export file working
+[33m9441bc4[m chart scale issue fixed
+[33m0d45f31[m chart scale issue fixed
+[33m20fc4ca[m chart drag and differnece table issue fixed
+[33md692477[m Add download file
+[33ma9113f6[m sample file updated
+[33ma98951b[m admin side updated
+[33m3b474a7[m admin side updated
+[33md587a23[m issue fixed
+[33m7adde7f[m table loading performance updated
+[33m7b829ff[m table loading performance updated
+[33m701c5cd[m table loading performance updated
+[33m96f805b[m table loading performance updated
+[33mfb091da[m table loading performance updated
+[33mfc13b38[m table loading performance updated
+[33m30fcba2[m table loading performance updated
+[33m4f7874a[m table loading performance updated
+[33m9f25a9a[m table loading performance updated
+[33m666699e[m table loading performance updated
+[33m82b7616[m table loading performance updated
+[33m8adf0c5[m table loading performance updated
+[33mc4092ad[m table loading performance updated
+[33mad970a2[m avg checkboxes filter handled
+[33m9e3bea7[m avg checkboxes filter handled
+[33md503020[m avg checkboxes filter handled
+[33m003ec52[m avg checkboxes filter handled
+[33m5d2d39a[m avg checkboxes filter handled
+[33mf021f0f[m avg checkboxes filter handled
+[33m486daec[m avg checkboxes filter handled
+[33mbd3c018[m avg checkboxes filter handled
+[33m039f300[m avg checkboxes filter handled
+[33m701ef82[m avg checkboxes filter handled
+[33mc344e2c[m avg checkboxes filter handled
+[33m55ba386[m avg checkboxes filter handled
+[33m5371c38[m avg check updated
+[33m18e413f[m avg1 and avg1 filters dropdown added
+[33mdb02536[m make partials and refecter code
+[33m4dbc817[m filters updated
+[33m62c09a8[m filters updated
+[33mf36e2f6[m product log file conf updated
+[33mc341da1[m filters updated
+[33m9e94d74[m user plan feature
+[33m829a422[m user plan feature
+[33mc5156db[m user plan feature
+[33mfffc478[m forecast and actuals updated
+[33me28972b[m forecast and actuals updated
+[33m8fce152[m forecast and actuals updated
+[33m9027594[m forecast form and tables updated
+[33m2bf890e[m forecast updated
+[33m8e0cbe9[m forecast updated
+[33m09fef31[m forecast updated
+[33m19bb9eb[m forecast updated
+[33ma3de6c2[m header menu updated
+[33me6fe700[m bootstrap issue fixed
+[33m3d55613[m bootstrap issue fixed
+[33m96d40f7[m bootstrap issue fixed
+[33m38bdf94[m bootstrap issue fixed
+[33m579cd52[m bootstrap issue fixed
+[33m77d2846[m home page designed
+[33me8770ce[m force_ssl  make false
+[33m1bec1b0[m project setup
+[33m590b8ab[m first commit

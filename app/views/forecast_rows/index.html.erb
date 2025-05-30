@@ -12,32 +12,21 @@
       <%= render partial: 'chart' %>
       <input type="number" id="chart-point-editor" style="display:none; position:absolute; z-index:1000; width:80px;" />
 
-      <turbo-frame id="modify_table" src="<%= table_modify_forecast_rows_path(data: @filter_key) %>">
-        <div class="text-center p-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
-          </div>
-          Loading Data...
-        </div>
-      </turbo-frame>
+    <%= render partial: "forecast_rows/modify_table_frame", locals: {
+    modify_table_forecast_rows: @modify_table_forecast_rows,
+    modify_forecast_rows_header: @modify_forecast_rows_header
+    } %>
 
-      <turbo-frame id="backup_table" src="<%= table_backup_forecast_rows_path(data: @filter_key) %>">
-        <div class="text-center p-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
-          </div>
-          Loading Original Data...
-        </div>
-      </turbo-frame>
+    <%= render partial: "forecast_rows/backup_table_frame", locals: {
+    forecast_rows_backup: @forecast_rows_backup,
+    forecast_rows_backup_header: @forecast_rows_backup_header
+    } %>
 
-      <turbo-frame id="difference_table" src="<%= table_difference_forecast_rows_path(data: @filter_key) %>">
-        <div class="text-center p-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only"></span>
-          </div>
-          Loading Differences...
-        </div>
-      </turbo-frame>
+    <%= render partial: "forecast_rows/difference_table_frame", locals: {
+    comparison_data: @comparison_data,
+    all_keys: @all_keys
+    } %>
+
     </div>
   </div>
 </section>
@@ -48,555 +37,293 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <script>
+alert("Script carregado");
+
     function applyUpdates() {
         const form = document.getElementById("filter-form");
         if (form) form.submit();
     }
-    document.addEventListener("turbo:load", function () {
-        function debounce(func, delay) {
-        let timeout;
-        return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), delay);
-        };
+        let chartRendered = false;
+
+  console.log("Rodando renderChartOnce"); // 👈 ADICIONA ISSO
+
+  function renderChartOnce() {
+  if (chartRendered) return;
+  chartRendered = true;
+
+  alert("Script carregado");
+  console.log("Rodando renderChartOnce");
+
+  const ctx = document.getElementById('forecast-chart').getContext('2d');
+  if (!ctx) return;
+
+  if (window.forecastChart instanceof Chart) {
+    window.forecastChart.destroy();
+  }
+
+  let actuals = [];
+  let isDarkMode = false;
+  let originalValue = null;
+
+  const sumOfAverages1 = <%= @average1 ? @average1 : '[]' %>;
+  const sumOfAverages2 = <%= @average2 ? @average2 : '[]' %>;
+  const rawData = <%= raw(@forecast_rows.to_json) %>;
+  const labels = Object.keys(rawData[0].data);
+  const values = labels.map(key => parseFloat(rawData[0].data[key]));
+
+  const actualsrawData = <%= @actuals.present? ? raw(@actuals.to_json) : '[]' %>;
+  if (actualsrawData.length > 0) {
+    const actual_labels = Object.keys(actualsrawData[0].data);
+    actuals = actual_labels.map(key => parseFloat(actualsrawData[0].data[key]));
+  } else {
+    actuals = [];
+  }
+
+  const rowId = rawData[0].id;
+  const greenPeriods = <%= @green %>;
+  const bluePeriods = <%= @blue %>;
+  const redPeriods = <%= @red %>;
+  const total = greenPeriods + bluePeriods + redPeriods;
+  const colors = [
+    ...Array(greenPeriods).fill('rgba(102, 205, 170, 0.8)'),
+    ...Array(bluePeriods).fill('rgba(100, 149, 237, 0.8)'),
+    ...Array(redPeriods).fill('rgba(240, 128, 128, 0.8)')
+  ];
+
+    const min_value = <%= @min_value %>;
+    const max_value = <%= @max_value %>;
+
+
+  window.forecastChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Forecast',
+          data: <%= @totals_by_column.to_h.values %>,
+          borderColor: colors,
+          segment: {
+            borderColor: ctx => colors[ctx.p1DataIndex]
+          },
+          borderWidth: 2,
+          fill: false,
+          pointBackgroundColor: 'white',
+          pointBorderColor: colors,
+          pointRadius: 5,
+          tension: 0.4
+        },
+        {
+          label: 'Backup Forecast',
+          data: <%= @totals_backup_by_column.to_h.values %>,
+          borderColor: 'gray',
+          borderWidth: 2,
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 5,
+          tension: 0.4,
+          datalabels: { display: false }
+        },
+        {
+          type: 'bar',
+          label: 'Actuals',
+          data: <%= @actual_columns.to_h.values %>,
+          backgroundColor: 'rgba(173, 216, 230, 0.7)',
+          datalabels: { display: false }
+        },
+        {
+          label: 'Avg-1',
+          data: Array(labels.length).fill(sumOfAverages1),
+          borderColor: 'rgba(100, 149, 237, 0.8)',
+          borderWidth: 2,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          datalabels: { display: false }
+        },
+        {
+          label: 'Avg-2',
+          data: Array(labels.length).fill(sumOfAverages2),
+          borderColor: 'rgba(255, 99, 132, 0.8)',
+          borderWidth: 2,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          datalabels: { display: false }
         }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 50, bottom: 30 } },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 15,
+            font: { size: 12 },
+            color: isDarkMode ? "#ffffff" : "#000000"
+          }
+        },
+        tooltip: {
+          backgroundColor: isDarkMode ? "#333" : "#ffffff",
+          titleColor: isDarkMode ? "#ffffff" : "#000000",
+          bodyColor: isDarkMode ? "#ffffff" : "#000000",
+          borderColor: isDarkMode ? "#666" : "#ddd",
+          borderWidth: 1
+        },
+        datalabels: {
+          color: isDarkMode ? "#ffffff" : "#000000",
+          anchor: 'end',
+          align: 'top',
+          formatter: value => Math.round(value).toLocaleString(),
+          font: { size: 9, weight: 'bold' },
+          rotation: -60
+        },
+        dragData: {
+          round: 1,
+          showTooltip: true,
+          onDragStart: (e, datasetIndex, index, value) => {
+            if (datasetIndex !== 0) return false;
+            originalValue = value;
+            return true;
+          },
+          onDragEnd: (e, datasetIndex, index, value) => {
+            if (datasetIndex !== 0 || originalValue === null) return;
+            const percentChange = ((value - originalValue) / originalValue) * 100;
+            const key = labels[index];
+            rawData[0].data[key] = value;
 
-        let which_type = "all"
-        let select_type = "total"
-        <% if params[:level].present? %>
-            which_type = "<%= params[:level] %>";
-            select_type = "<%= (params[params[:level]])%>";
-        <% end %>
-        // --- Apply Button Submission ---
-        // applyUpdates();
-        // --- Decimal format checkboxes ---
-        const radiosDecimal = document.querySelectorAll("input[name='number-format']");
-        const decimalFields = document.querySelectorAll("input.decimal_format");
-
-        function updateDecimalFields(value) {
-            const decimalChar = value === "comma" ? "comma" : "dot";
-            decimalFields.forEach(field => field.value = decimalChar);
-        }
-
-        const selectedDecimal = document.querySelector("input[name='number-format']:checked");
-        if (selectedDecimal) updateDecimalFields(selectedDecimal.value);
-
-        radiosDecimal.forEach(radio => {
-            radio.addEventListener("change", function () {
-                updateDecimalFields(this.value);
+            fetch(`/forecast_rows/${rowId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
+              },
+              body: JSON.stringify({
+                data: rawData[0].data,
+                changed_key: key,
+                which_type: which_type,
+                select_type: select_type,
+                percent_change: percentChange.toFixed(2)
+              })
+            }).then(response => {
+              if (!response.ok) alert("Failed to save updated value.");
             });
-        });
-
-        // --- Load filters when radio is changed ---
-        document.querySelectorAll(".level-radio").forEach(radio => {
-            radio.addEventListener("change", function () {
-                const url = this.dataset.url;
-                if (!url) return;
-
-                fetch(url)
-                  .then(response => response.text())
-                  .then(html => {
-                      document.getElementById("select-container").innerHTML = html;
-                  });
-            });
-        });
-
-
-
-        // --- Custom Dropdown Toggle ---
-        function toggleDropdown(dropdownId) {
-            const dropdown = document.getElementById(dropdownId);
-            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+          }
         }
-
-        window.addEventListener("click", function (event) {
-            if (!event.target.closest(".custom-dropdown")) {
-                const dropdown3m = document.getElementById("dropdown-content-3m");
-                const dropdown6m = document.getElementById("dropdown-content-6m");
-                if (dropdown3m) dropdown3m.style.display = "none";
-                if (dropdown6m) dropdown6m.style.display = "none";
-            }
-        });
-
-        const btn3m = document.getElementById("dropdown-btn-3m");
-        const btn6m = document.getElementById("dropdown-btn-6m");
-
-        if (btn3m) {
-            btn3m.addEventListener("click", function (e) {
-                e.stopPropagation();
-                toggleDropdown("dropdown-content-3m");
-            });
+      },
+      scales: {
+        x: {
+          title: { display: false },
+          ticks: {
+            maxRotation: 60,
+            minRotation: 30,
+            color: isDarkMode ? "#ffffff" : "#000000"
+          },
+          grid: { display: false, color: isDarkMode ? "#444" : "#ddd" }
+        },
+        y: {
+          title: { display: false },
+          beginAtZero: true,
+          min: min_value,
+          suggestedMax: max_value,
+          ticks: {
+            callback: value => Math.round(value).toLocaleString(),
+            color: isDarkMode ? "#ffffff" : "#000000"
+          },
+          grid: { display: false, color: isDarkMode ? "#444" : "#ddd" }
         }
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
 
-        if (btn6m) {
-            btn6m.addEventListener("click", function (e) {
-                e.stopPropagation();
-                toggleDropdown("dropdown-content-6m");
-            });
-        }
+  const inputField = document.getElementById("chart-point-editor");
 
-        // --- Search filter dropdown ---
-        const filterSearchInput = document.getElementById("filter-search");
-        if (filterSearchInput) {
-            filterSearchInput.addEventListener("input", function () {
-                const filter = this.value.toLowerCase();
-                const select = document.getElementById("filter-select");
-                if (!select) return;
+  document.getElementById("forecast-chart").onclick = function (event) {
+    const canvasPosition = Chart.helpers.getRelativePosition(event, window.forecastChart);
+    const points = window.forecastChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+    if (points.length > 0) {
+      const pointIndex = points[0].index;
+      const datasetIndex = points[0].datasetIndex;
+      const meta = window.forecastChart.getDatasetMeta(datasetIndex);
+      const point = meta.data[pointIndex];
+      inputField.value = point.$context.raw;
+      inputField.dataset.index = pointIndex;
+      inputField.style.left = `${event.pageX}px`;
+      inputField.style.top = `${event.pageY}px`;
+      inputField.style.width = "80px";
+      inputField.style.zIndex = "1000";
+      inputField.style.display = 'block';
+      document.body.appendChild(inputField);
+      inputField.focus();
+    } else {
+      inputField.style.display = 'none';
+    }
+  };
 
-                for (let i = 0; i < select.options.length; i++) {
-                    const option = select.options[i];
-                    option.style.display = option.text.toLowerCase().includes(filter) ? "" : "none";
-                }
-            });
-        }
+  function handleInputSave() {
+    const newValue = parseFloat(inputField.value);
+    if (!isNaN(newValue)) {
+      const index = parseInt(inputField.dataset.index);
+      const key = labels[index];
+      const oldValue = parseFloat(rawData[0].data[key]);
+      const percentChange = ((newValue - oldValue) / oldValue) * 100;
 
-        // --- Dynamic filter type change ---
-        const filtersContainer = document.getElementById("filters_type");
-        const levelHidden = document.getElementById("level-hidden");
+      window.forecastChart.data.datasets[0].data[index] = newValue;
+      rawData[0].data[key] = newValue;
+      window.forecastChart.update();
 
-        document.querySelectorAll('.level-radio').forEach(radio => {
-            radio.addEventListener('change', function () {
-                let sourceId = '';
-                let selectedValue = '';
+      fetch(`/forecast_rows/${rowId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
+        },
+        body: JSON.stringify({
+          data: rawData[0].data,
+          changed_key: key,
+          percent_change: percentChange.toFixed(2)
+        })
+      }).then(response => {
+        if (!response.ok) alert("Failed to save updated value.");
+      });
+    }
+    inputField.style.display = 'none';
+  }
 
-                switch (this.value) {
-                    case 'product':
-                        sourceId = 'type_products';
-                        selectedValue = new URLSearchParams(window.location.search).get('product');
-                        break;
-                    case 'subcategory':
-                        sourceId = 'type_subcategories';
-                        selectedValue = new URLSearchParams(window.location.search).get('subcategory');
-                        break;
-                    case 'category':
-                        sourceId = 'type_categories';
-                        selectedValue = new URLSearchParams(window.location.search).get('category');
-                        break;
-                }
+  inputField.onblur = handleInputSave;
 
-                const sourceDiv = document.getElementById(sourceId);
-                if (sourceDiv && filtersContainer) {
-                    filtersContainer.innerHTML = sourceDiv.innerHTML;
+  inputField.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleInputSave();
+    }
+  });
 
-                    const newSelect = filtersContainer.querySelector('select');
-                    if (newSelect) {
-                        newSelect.id = 'filter-select';
+  const delayedAvg1Submit = debounce(() => {
+    const form = document.getElementById("filter-form");
+    if (form) form.submit();
+  }, 800);
+  document.querySelectorAll('input[name="avg1_selected_dates[]"]').forEach(box => {
+    box.addEventListener('change', delayedAvg1Submit);
+  });
 
-                        if (selectedValue) {
-                            Array.from(newSelect.options).forEach(option => {
-                                option.selected = option.value === selectedValue;
-                            });
-                        }
-
-                        newSelect.addEventListener("change", function () {
-                            this.form.submit();
-                        });
-                    }
-                }
-
-                if (levelHidden) levelHidden.value = this.value;
-            });
-        });
-
-        // --- Restore on page load ---
-        const checkedRadio = document.querySelector('.level-radio:checked');
-        if (checkedRadio) {
-            checkedRadio.dispatchEvent(new Event("change"));
-        }
-
-        // --- File Upload Auto-Submit ---
-        const fileInputTemplate = document.getElementById("upload-template");
-        const fileInputActuals = document.getElementById("upload-actuals");
-
-        if (fileInputTemplate) {
-            fileInputTemplate.addEventListener("change", function () {
-                if (this.files.length > 0) {
-                    document.getElementById("import-form").submit();
-                }
-            });
-        }
-
-        if (fileInputActuals) {
-            fileInputActuals.addEventListener("change", function () {
-                if (this.files.length > 0) {
-                    document.getElementById("actuals-import-form").submit();
-                }
-            });
-        }
-
-        // --- Navigation ---
-        window.navigateFilter = function (direction) {
-            const filtersContainer = document.getElementById('filters_type');
-            const select = filtersContainer.querySelector('select');
-            if (!select) return;
-
-            let selectedIndex = select.selectedIndex;
-            if (direction === 'next' && selectedIndex < select.options.length - 1) {
-                select.selectedIndex++;
-            } else if (direction === 'previous' && selectedIndex > 0) {
-                select.selectedIndex--;
-            }
-
-            select.form.submit();
-        };
-
-        const inputField = document.getElementById("chart-point-editor");
-
-        document.getElementById("forecast-chart").onclick = function (event) {
-            const canvasPosition = Chart.helpers.getRelativePosition(event, window.forecastChart);
-            const points = window.forecastChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
-
-            if (points.length > 0) {
-                const pointIndex = points[0].index;
-                const datasetIndex = points[0].datasetIndex;
-                const meta = window.forecastChart.getDatasetMeta(datasetIndex);
-                const point = meta.data[pointIndex];
-                const rect = event.target.getBoundingClientRect();
-                inputField.value = point.$context.raw; // Show current value
-                inputField.dataset.index = pointIndex;
-                inputField.style.left = `${event.pageX}px`;
-                console.log(event);
-                console.log(rect);
-                inputField.style.top = `${event.pageY}px`;
-                inputField.style.width = "80px";
-                inputField.style.zIndex = "1000";
-                inputField.style.display = 'block';
-                document.body.appendChild(inputField);
-                inputField.focus();
-            } else {
-                inputField.style.display = 'none';
-            }
-        };
-
-        // Shared handler to process and save value
-        function handleInputSave() {
-            const newValue = parseFloat(inputField.value);
-            if (!isNaN(newValue)) {
-                const index = parseInt(inputField.dataset.index);
-                const key = labels[index];
-                const oldValue = parseFloat(rawData[0].data[key]);
-                const percentChange = ((newValue - oldValue) / oldValue) * 100;
-
-                // Update chart and rawData
-                window.forecastChart.data.datasets[0].data[index] = newValue;
-                rawData[0].data[key] = newValue;
-                window.forecastChart.update();
-
-                // Save via PATCH
-                fetch(`/forecast_rows/${rowId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
-                    },
-                    body: JSON.stringify({
-                        data: rawData[0].data,
-                        changed_key: key,
-                        percent_change: percentChange.toFixed(2)
-                    })
-                }).then(response => {
-                    if (!response.ok) {
-                        alert("Failed to save updated value.");
-                    }
-                });
-            }
-            inputField.style.display = 'none';
-        }
-                // --- Avg1 delayed submission ---
-                const delayedAvg1Submit = debounce(() => {
-                const form = document.getElementById("filter-form");
-                if (form) form.submit();
-                }, 800);
-
-                document.querySelectorAll('input[name="avg1_selected_dates[]"]').forEach(box => {
-                box.addEventListener('change', delayedAvg1Submit);
-                });
-
-                // --- Avg2 delayed submission ---
-                const delayedAvg2Submit = debounce(() => {
-                const form = document.getElementById("filter-form");
-                if (form) form.submit();
-                }, 800);
-
-                document.querySelectorAll('input[name="avg2_selected_dates[]"]').forEach(box => {
-                box.addEventListener('change', delayedAvg2Submit);
-                });
-                
+  const delayedAvg2Submit = debounce(() => {
+    const form = document.getElementById("filter-form");
+    if (form) form.submit();
+  }, 800);
+  document.querySelectorAll('input[name="avg2_selected_dates[]"]').forEach(box => {
+    box.addEventListener('change', delayedAvg2Submit);
+  });
+}
 
 
-// Save on blur
-        inputField.onblur = handleInputSave;
 
-// Save on Enter
-        inputField.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                handleInputSave();
-            }
-        });
+document.addEventListener("DOMContentLoaded", renderChartOnce);
 
-
-        const ctx = document.getElementById('forecast-chart').getContext('2d');
-        if (!ctx) return;
-        if (window.forecastChart instanceof Chart) {
-            window.forecastChart.destroy();
-        }
-        let actuals = [];
-        let isDarkMode = false;
-        let originalValue = null;
-        const sumOfAverages1 = <%= @average1 ? @average1 : '[]' %>;
-        const sumOfAverages2 = <%= @average2 ? @average2 : '[]' %>;
-        const rawData = <%= raw(@forecast_rows.to_json) %>;
-        const labels = Object.keys(rawData[0].data);
-        const values = labels.map(key => parseFloat(rawData[0].data[key]));
-
-        const actualsrawData = <%= @actuals.present? ? raw(@actuals.to_json) : '[]' %>;
-        if (actualsrawData.length > 0){
-            const actual_labels = Object.keys(actualsrawData[0].data);
-            actuals = actual_labels.map(key => parseFloat(actualsrawData[0].data[key]));
-        }else {
-            actuals =  []
-        }
-
-        const rowId = rawData[0].id;
-        const greenPeriods = <%= @green %>;
-        const bluePeriods = <%= @blue %>;
-        const redPeriods = <%= @red %>;
-        const total = greenPeriods + bluePeriods + redPeriods;
-        if (total !== values.length) {
-            // alert(`Warning: Saved periods total (${total}) does not match data length (${values.length})`);
-        }
-        const colors = [
-            ...Array(greenPeriods).fill('rgba(102, 205, 170, 0.8)'), // medium aquamarine
-            ...Array(bluePeriods).fill('rgba(100, 149, 237, 0.8)'),  // cornflower blue
-            ...Array(redPeriods).fill('rgba(240, 128, 128, 0.8)')    // light coral
-        ];
-        <%
-                min_data = @totals_by_column.values.min || 0
-                max_data = @totals_by_column.values.max || 100
-
-                # Decide a good step based on data range
-                range = max_data - min_data
-                step = case
-                      when range <= 100 then 10
-                      when range <= 500 then 50
-                      when range <= 1000 then 100
-                      else 500
-                      end
-
-                # Adjust min and max using step
-                min_value = 0
-                max_value = (max_data / step.to_f).ceil * step
-        %>
-
-        const min_value = <%= min_value %>;
-        const max_value = <%= max_value %>;
-
-
-        window.forecastChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Forecast',
-                        data: <%=@totals_by_column.to_h.values %>, // This one is draggable
-                        borderColor: colors,
-                        segment: {
-                            borderColor: ctx => colors[ctx.p1DataIndex]
-                        },
-                        borderWidth: 2,
-                        fill: false,
-                        pointBackgroundColor: 'white',
-                        pointBorderColor: colors,
-                        pointRadius: 5,
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Backup Forecast',
-                        data: <%=@totals_backup_by_column.to_h.values %>, // Cloned, not draggable
-                        borderColor: 'gray',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        fill: false,
-                        pointRadius: 5,
-                        tension: 0.4,
-                        datalabels: {
-                            display: false
-                        }
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Actuals',
-                        data: <%=@actual_columns.to_h.values %>,
-                        backgroundColor: 'rgba(173, 216, 230, 0.7)', // light blue
-                        datalabels: {
-                            display: false // 👈 Hides values for this dataset only
-                        }
-                    },
-                    {
-                        label: 'Avg-1',
-                        data: Array(labels.length).fill(sumOfAverages1),
-                        borderColor: 'rgba(100, 149, 237, 0.8)', // cornflower blue pastel,
-                        borderWidth: 2,
-                        borderDash: [3, 3],
-                        pointRadius: 0,
-                        fill: false,
-                        datalabels: {
-                            display: true,
-                            formatter: function() {
-                                return sumOfAverages1.toFixed(2);
-                            },
-                            align: 'right',
-                            anchor: 'right'
-                        },
-                        datalabels: {
-                            display: false
-                        }
-                    },
-                    {
-                        label: 'Avg-2',
-                        data: Array(labels.length).fill(sumOfAverages2),
-                        borderColor: 'rgba(255, 99, 132, 0.8)',
-                        borderWidth: 2,
-                        borderDash: [3, 3],
-                        pointRadius: 0,
-                        fill: false,
-                        datalabels: {
-                            display: true,
-                            formatter: function() {
-                                return sumOfAverages2.toFixed(2);
-                            },
-                            align: 'right',
-                            anchor: 'right'
-                        },
-                        datalabels: {
-                            display: false
-                        }
-                    },
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                layout: {
-                    padding: {
-                        top: 50,
-                        bottom: 30
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 15,
-                            font: { size: 12 },
-                            color: isDarkMode ? "#ffffff" : "#000000"
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: isDarkMode ? "#333" : "#ffffff",
-                        titleColor: isDarkMode ? "#ffffff" : "#000000",
-                        bodyColor: isDarkMode ? "#ffffff" : "#000000",
-                        borderColor: isDarkMode ? "#666" : "#ddd",
-                        borderWidth: 1
-                    },
-                    datalabels: {
-                        color: isDarkMode ? "#ffffff" : "#000000",
-                        anchor: 'end',
-                        align: 'top',
-                        formatter: value => Math.round(value).toLocaleString(),
-                        font: { size: 9, weight: 'bold' },
-                        rotation: -60
-                    },
-                    dragData: {
-                        round: 1,
-                        showTooltip: true,
-                        onDragStart:(e, datasetIndex, index, value) =>  {
-                            if (datasetIndex !== 0) return false;
-
-                            originalValue = value; // Save the starting value
-                            return true;
-                        },
-                        onDragEnd: (e, datasetIndex, index, value) => {
-                            if (datasetIndex !== 0 || originalValue === null) return;
-                            const percentChange = ((value - originalValue) / originalValue) * 100;
-                            const key = labels[index];
-                            rawData[0].data[key] = value;
-                            fetch(`/forecast_rows/${rowId}`, {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-Token': document.querySelector("[name='csrf-token']").content
-                                },
-                                body: JSON.stringify({
-                                    data: rawData[0].data,
-                                    changed_key: key,
-                                    which_type: which_type,
-                                    select_type: select_type,
-                                    percent_change: percentChange.toFixed(2)
-                                })
-                            }).then(response => {
-                                if (!response.ok) {
-                                    alert("Failed to save updated value.");
-                                }
-                            });
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: false,
-                            text: 'Period',
-                            color: isDarkMode ? "#ffffff" : "#000000"
-                        },
-                        ticks: {
-                            maxRotation: 60,
-                            minRotation: 30,
-                            color: isDarkMode ? "#ffffff" : "#000000"
-                        },
-                        grid: {
-                            display: false,
-                            color: isDarkMode ? "#444" : "#ddd"
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: false,
-                            text: 'Volume',
-                            color: isDarkMode ? "#ffffff" : "#000000"
-                        },
-                        beginAtZero: true,
-                        min: min_value,
-                        suggestedMax: max_value,
-                        ticks: {
-                            callback: value => Math.round(value).toLocaleString(),
-                            color: isDarkMode ? "#ffffff" : "#000000"
-                        },
-                        grid: {
-                            display: false,
-                            color: isDarkMode ? "#444" : "#ddd"
-                        }
-                    }
-                }
-            },
-            plugins: [ChartDataLabels]
-        });
-
-        // Function from above
-        function generateSegmentColors(valuesLength, userColors) {
-            const segmentSize = Math.ceil(valuesLength / userColors.length);
-            const colors = [];
-
-            for (let i = 0; i < valuesLength; i++) {
-                const colorIndex = Math.floor(i / segmentSize);
-                colors.push(userColors[colorIndex] || userColors[userColors.length - 1]);
-            }
-
-            return colors;
-        }
-    });
 </script>
 <div class="loading-popup" style="display: none;">
   <p>Processing data... Please wait.</p>
